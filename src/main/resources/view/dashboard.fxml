@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="com.app.controller.DashboardController"
+            fitToWidth="true" style="-fx-background-color: #f5f5f5;">
+    
+    <VBox spacing="20" style="-fx-padding: 30; -fx-background-color: #f5f5f5;">
+        
+        <!-- Header -->
+        <Label text="📊 Tableau de Bord" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+        <Label fx:id="welcomeLabel" text="Bienvenue!" style="-fx-font-size: 18px; -fx-text-fill: #666;"/>
+        
+        <!-- Stats Cards -->
+        <HBox spacing="20">
+            <!-- Level Card -->
+            <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-min-width: 250; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="🎯 Niveau" style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
+                <Label fx:id="levelLabel" text="1" style="-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #4CAF50;"/>
+                <ProgressBar fx:id="levelProgressBar" progress="0" prefWidth="200" prefHeight="10" styleClass="level-progress"/>
+                <Label fx:id="xpLabel" text="0 / 100 XP" style="-fx-text-fill: #999; -fx-font-size: 12px;"/>
+            </VBox>
+            
+            <!-- Points Card -->
+            <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-min-width: 250; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="⭐ Points Totaux" style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
+                <Label fx:id="pointsLabel" text="0" style="-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #FF9800;"/>
+                <Label text="XP" style="-fx-text-fill: #999; -fx-font-size: 12px;"/>
+            </VBox>
+            
+            <!-- Streak Card -->
+            <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-min-width: 250; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="🔥 Série Actuelle" style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
+                <Label fx:id="streakLabel" text="0" style="-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #F44336;"/>
+                <Label text="jours" style="-fx-text-fill: #999; -fx-font-size: 12px;"/>
+            </VBox>
+        </HBox>
+        
+        <!-- More Stats -->
+        <HBox spacing="20">
+            <!-- Accuracy Card -->
+            <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-min-width: 250; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="🎯 Précision" style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
+                <Label fx:id="accuracyLabel" text="0%" style="-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #2196F3;"/>
+                <Label text="moyenne" style="-fx-text-fill: #999; -fx-font-size: 12px;"/>
+            </VBox>
+            
+            <!-- Quizzes Card -->
+            <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-min-width: 250; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="📝 Quiz Complétés" style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
+                <Label fx:id="quizzesLabel" text="0" style="-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #9C27B0;"/>
+                <Label text="quiz" style="-fx-text-fill: #999; -fx-font-size: 12px;"/>
+            </VBox>
+        </HBox>
+        
+        <!-- Badges Section -->
+        <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+            <Label text="🏆 Badges Récents" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <FlowPane fx:id="badgesContainer" hgap="15" vgap="15">
+                <Label text="Aucun badge pour le moment. Complétez des quiz pour en gagner!" style="-fx-text-fill: #999;"/>
+            </FlowPane>
+        </VBox>
+        
+    </VBox>
+    
+</ScrollPane>

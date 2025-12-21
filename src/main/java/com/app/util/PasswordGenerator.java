@@ -1,0 +1,12 @@
+package com.app.util;
+
+import org.mindrot.jbcrypt.BCrypt;
+
+public class PasswordGenerator {
+    public static void main(String[] args) {
+        String password = "admin123";
+        String hash = BCrypt.hashpw(password, BCrypt.gensalt());
+        System.out.println("Password: " + password);
+        System.out.println("Hash: " + hash);
+    }
+}

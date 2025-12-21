@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="com.app.controller.MainController"
+            prefWidth="1280" prefHeight="800">
+    
+    <!-- Top Bar -->
+    <top>
+        <HBox style="-fx-background-color: #2c3e50; -fx-padding: 15 20;" alignment="CENTER_LEFT" spacing="20">
+            <Label text="📚 Plateforme QCM" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="userLabel" text="Utilisateur: admin" style="-fx-text-fill: white; -fx-font-size: 14px;"/>
+            <Button text="Déconnexion" onAction="#handleLogout" 
+                    style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 5;"/>
+        </HBox>
+    </top>
+    
+    <!-- Main Content -->
+    <center>
+        <SplitPane dividerPositions="0.2">
+            <!-- Sidebar -->
+            <VBox spacing="10" style="-fx-background-color: #34495e; -fx-padding: 20;" minWidth="200">
+                <Label text="Navigation" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-padding: 0 0 10 0;"/>
+                
+                <Button text="📊 Tableau de Bord" onAction="#showDashboard" maxWidth="Infinity" 
+                        style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-font-size: 13px; -fx-background-radius: 5;"/>
+                <Button text="🏆 Classement" onAction="#showLeaderboard" maxWidth="Infinity" 
+                        style="-fx-background-color: #FF9800; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-font-size: 13px; -fx-background-radius: 5;"/>
+                <Button text="👤 Profil" onAction="#showProfile" maxWidth="Infinity" 
+                        style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-font-size: 13px; -fx-background-radius: 5;"/>
+                
+                <Separator style="-fx-background-color: #7f8c8d;"/>
+                
+                <Button text="📝 Jouer au Quiz" onAction="#showQuizSelection" maxWidth="Infinity" 
+                        style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-font-size: 13px; -fx-background-radius: 5;"/>
+                <Button text="🎮 Salle Multijoueur" onAction="#showQuizRoom" maxWidth="Infinity" 
+                        style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-font-size: 13px; -fx-background-radius: 5;"/>
+            </VBox>
+            
+            <!-- Content Area -->
+            <StackPane fx:id="contentArea" style="-fx-background-color: #ecf0f1;"/>
+        </SplitPane>
+    </center>
+    
+</BorderPane>

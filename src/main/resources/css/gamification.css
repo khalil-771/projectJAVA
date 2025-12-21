@@ -1,0 +1,251 @@
+/* Gamification CSS Styles */
+
+/* Badge Cards */
+.badge-card {
+    -fx-background-color: #FFF3E0;
+    -fx-padding: 15;
+    -fx-border-color: #FFB74D;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);
+}
+
+.badge-card:hover {
+    -fx-background-color: #FFE0B2;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-cursor: hand;
+}
+
+.badge-locked {
+    -fx-opacity: 0.4;
+    -fx-background-color: #F5F5F5;
+    -fx-border-color: #E0E0E0;
+}
+
+/* Progress Bars */
+.progress-bar {
+    -fx-background-color: #E0E0E0;
+    -fx-background-radius: 10;
+}
+
+.progress-bar .bar {
+    -fx-background-color: linear-gradient(to right, #4CAF50, #8BC34A);
+    -fx-background-radius: 10;
+    -fx-padding: 0.5em;
+}
+
+.progress-bar-level {
+    -fx-accent: #4CAF50;
+}
+
+.progress-bar-xp {
+    -fx-accent: #2196F3;
+}
+
+/* Stat Cards */
+.stat-card {
+    -fx-background-color: white;
+    -fx-padding: 20;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);
+}
+
+.stat-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 12, 0, 0, 4);
+}
+
+/* Level Display */
+.level-display {
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+    -fx-text-fill: linear-gradient(to bottom, #4CAF50, #2E7D32);
+}
+
+.level-title {
+    -fx-font-size: 20px;
+    -fx-text-fill: #666;
+    -fx-font-weight: 600;
+}
+
+/* Points Animation */
+@keyframes pointsEarn {
+    0% {
+        -fx-scale-x: 0.5;
+        -fx-scale-y: 0.5;
+        -fx-opacity: 0;
+    }
+    50% {
+        -fx-scale-x: 1.2;
+        -fx-scale-y: 1.2;
+    }
+    100% {
+        -fx-scale-x: 1.0;
+        -fx-scale-y: 1.0;
+        -fx-opacity: 1;
+    }
+}
+
+.points-earned {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #4CAF50;
+    -fx-effect: dropshadow(gaussian, rgba(76, 175, 80, 0.5), 10, 0, 0, 0);
+}
+
+/* Badge Notification */
+.badge-notification {
+    -fx-background-color: linear-gradient(to right, #FF9800, #F57C00);
+    -fx-text-fill: white;
+    -fx-padding: 15 25;
+    -fx-background-radius: 8;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 3);
+}
+
+/* Leaderboard Table */
+.leaderboard-table {
+    -fx-background-color: white;
+}
+
+.leaderboard-table .table-row-cell {
+    -fx-background-color: white;
+}
+
+.leaderboard-table .table-row-cell:hover {
+    -fx-background-color: #F5F5F5;
+}
+
+.leaderboard-table .table-row-cell:selected {
+    -fx-background-color: #E3F2FD;
+    -fx-text-fill: #1976D2;
+}
+
+.rank-1 {
+    -fx-background-color: #FFD700 !important;
+    -fx-font-weight: bold;
+}
+
+.rank-2 {
+    -fx-background-color: #C0C0C0 !important;
+    -fx-font-weight: bold;
+}
+
+.rank-3 {
+    -fx-background-color: #CD7F32 !important;
+    -fx-font-weight: bold;
+}
+
+/* Streak Display */
+.streak-active {
+    -fx-text-fill: #FF5722;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(255, 87, 34, 0.5), 5, 0, 0, 0);
+}
+
+.streak-fire {
+    -fx-font-size: 32px;
+}
+
+/* Navigation Buttons */
+.nav-button {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 12 20;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+
+.nav-button:hover {
+    -fx-background-color: #45A049;
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.nav-button:pressed {
+    -fx-background-color: #3D8B40;
+}
+
+.nav-button-dashboard {
+    -fx-background-color: #4CAF50;
+}
+
+.nav-button-leaderboard {
+    -fx-background-color: #FF9800;
+}
+
+.nav-button-profile {
+    -fx-background-color: #2196F3;
+}
+
+/* Difficulty Indicators */
+.difficulty-beginner {
+    -fx-text-fill: #4CAF50;
+    -fx-font-weight: bold;
+}
+
+.difficulty-intermediate {
+    -fx-text-fill: #FF9800;
+    -fx-font-weight: bold;
+}
+
+.difficulty-advanced {
+    -fx-text-fill: #F44336;
+    -fx-font-weight: bold;
+}
+
+/* Quiz Result */
+.quiz-result-pass {
+    -fx-text-fill: #4CAF50;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.quiz-result-fail {
+    -fx-text-fill: #FF9800;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { -fx-opacity: 0; }
+    to { -fx-opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        -fx-translate-y: 20;
+        -fx-opacity: 0;
+    }
+    to {
+        -fx-translate-y: 0;
+        -fx-opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        -fx-scale-x: 1.0;
+        -fx-scale-y: 1.0;
+    }
+    50% {
+        -fx-scale-x: 1.1;
+        -fx-scale-y: 1.1;
+    }
+}
+
+.fade-in {
+    -fx-animation: fadeIn 0.5s ease-in;
+}
+
+.slide-up {
+    -fx-animation: slideUp 0.6s ease-out;
+}
+
+.pulse {
+    -fx-animation: pulse 1s infinite;
+}

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.app.controller.LanguageSelectionController"
+      spacing="20" style="-fx-padding: 30; -fx-background-color: white;" prefWidth="400" prefHeight="500">
+    
+    <!-- Header -->
+    <VBox alignment="CENTER" spacing="10">
+        <Label text="🌐 Choose Your Language" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+        <Label text="Select a programming language to practice" style="-fx-text-fill: #666;"/>
+    </VBox>
+    
+    <!-- Language List -->
+    <VBox spacing="10" VBox.vgrow="ALWAYS">
+        <Label text="Available Languages:" style="-fx-font-weight: bold;"/>
+        <ListView fx:id="languageList" VBox.vgrow="ALWAYS" 
+                  style="-fx-border-color: #E0E0E0; -fx-border-width: 1; -fx-border-radius: 5;"/>
+    </VBox>
+    
+    <!-- Selection Display -->
+    <VBox alignment="CENTER" spacing="10" style="-fx-background-color: #E3F2FD; -fx-padding: 15; -fx-background-radius: 5;">
+        <Label fx:id="selectedLabel" text="Selected: None" 
+               style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1976D2;"/>
+    </VBox>
+    
+    <!-- Buttons -->
+    <HBox spacing="15" alignment="CENTER">
+        <Button fx:id="startButton" text="Start Quiz" onAction="#startQuiz" 
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 30; -fx-font-size: 14px; -fx-cursor: hand;"
+                defaultButton="true"/>
+        <Button text="Cancel" onAction="#cancel" 
+                style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 30; -fx-font-size: 14px; -fx-cursor: hand;"
+                cancelButton="true"/>
+    </HBox>
+    
+    <!-- Info -->
+    <Label text="💡 Tip: Each language has its own leaderboard and mastery badges!" 
+           style="-fx-text-fill: #666; -fx-font-size: 12px; -fx-text-alignment: center;" 
+           wrapText="true"/>
+    
+</VBox>
