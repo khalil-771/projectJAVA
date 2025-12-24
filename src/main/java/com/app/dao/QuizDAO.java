@@ -1,8 +1,10 @@
 package com.app.dao;
 
-import com.app.model.Quiz;
 import java.util.List;
 import java.util.Optional;
+
+import com.app.model.Question;
+import com.app.model.Quiz;
 
 public interface QuizDAO {
     List<Quiz> findQuizzesByCourseId(int courseId);
@@ -10,4 +12,6 @@ public interface QuizDAO {
     Optional<Quiz> findQuizById(int quizId);
 
     Quiz getFullQuiz(int quizId); // Fetch questions and answers
+
+    List<Question> findQuestionsByCourseAndDifficulty(int courseId, String difficulty);
 }

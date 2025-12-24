@@ -99,6 +99,9 @@ ADD COLUMN IF NOT EXISTS language_tag VARCHAR(20) DEFAULT 'html',
 ADD COLUMN IF NOT EXISTS difficulty_level ENUM('BEGINNER', 'INTERMEDIATE', 'ADVANCED') DEFAULT 'BEGINNER',
 ADD COLUMN IF NOT EXISTS points_value INT DEFAULT 10;
 
+-- Populate difficulty_level from existing difficulty column
+UPDATE questions SET difficulty_level = difficulty WHERE difficulty_level != difficulty OR difficulty_level IS NULL;
+
 -- Add performance metrics to quiz results
 ALTER TABLE user_quiz_results
 ADD COLUMN IF NOT EXISTS time_taken_seconds INT,

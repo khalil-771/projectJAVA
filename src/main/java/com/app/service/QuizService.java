@@ -1,13 +1,13 @@
 package com.app.service;
 
+import java.util.List;
+import java.util.Map;
+
 import com.app.dao.QuizDAO;
 import com.app.dao.impl.QuizDAOImpl;
 import com.app.model.Question;
 import com.app.model.Quiz;
 import com.app.model.User;
-
-import java.util.List;
-import java.util.Map;
 
 public class QuizService {
 
@@ -65,5 +65,12 @@ public class QuizService {
         // Return answers from the question's answers list
         // This is a helper method for the enhanced quiz controller
         return new java.util.ArrayList<>(); // Placeholder - answers are already in Question.getAnswers()
+    }
+
+    /**
+     * Get questions filtered by course and difficulty
+     */
+    public List<Question> getQuestionsByCourseAndDifficulty(int courseId, String difficulty) {
+        return quizDAO.findQuestionsByCourseAndDifficulty(courseId, difficulty);
     }
 }

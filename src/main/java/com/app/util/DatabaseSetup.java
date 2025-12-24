@@ -1,14 +1,10 @@
 package com.app.util;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
-import java.util.stream.Collectors;
 
 public class DatabaseSetup {
 
@@ -54,6 +50,9 @@ public class DatabaseSetup {
 
                 // Run gamification extensions
                 runGamificationScript(conn);
+
+                // Run seed data
+                runSeedScript(conn);
             }
 
         } catch (Exception e) {
@@ -132,6 +131,37 @@ public class DatabaseSetup {
             System.out.println("Gamification extensions completed.");
         } catch (Exception e) {
             System.err.println("Failed to run gamification script: " + e.getMessage());
+        }
+    }
+
+    private static void runSeedScript(Connection conn) {
+        try {
+            System.out.println("Running seed data script...");
+
+            String seedPath = "sql/seed_questions_all_levels.sql";
+            if (!Files.exists(Paths.get(seedPath))) {
+                System.out.println("Seed script not found at " + seedPath + ", skipping.");
+                return;
+            }
+
+            String content = new String(Files.readAllBytes(Paths.get(seedPath)));
+            String[] statements = content.split(";");
+
+            try (Statement stmt = conn.createStatement()) {
+                for (String sql : statements) {
+                    if (sql.trim().isEmpty())
+                        continue;
+                    try {
+                        stmt.execute(sql);
+                    } catch (Exception e) {
+                        // Ignore errors (data might already exist)
+                    }
+                }
+            }
+
+            System.out.println("Seed data script completed.");
+        } catch (Exception e) {
+            System.err.println("Failed to run seed script: " + e.getMessage());
         }
     }
 }

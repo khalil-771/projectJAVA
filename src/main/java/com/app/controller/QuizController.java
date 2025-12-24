@@ -1,5 +1,10 @@
 package com.app.controller;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.app.model.Answer;
 import com.app.model.Badge;
 import com.app.model.Question;
@@ -8,17 +13,18 @@ import com.app.service.AuthenticationService;
 import com.app.service.BadgeService;
 import com.app.service.QuizService;
 import com.app.service.StatsService;
+
 import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Control;
+import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class QuizController {
 
@@ -62,7 +68,16 @@ public class QuizController {
             badgesContainer.getChildren().clear();
         }
 
+        System.out.println("Number of questions in quiz: " + currentQuiz.getQuestions().size());
+
         int index = 1;
+<<<<<<< Updated upstream
+=======
+        String selectedDifficulty = (difficultyCombo != null && difficultyCombo.getValue() != null)
+                ? difficultyCombo.getValue() : "All";
+
+
+>>>>>>> Stashed changes
         for (Question q : currentQuiz.getQuestions()) {
             VBox questionBox = new VBox(5);
             questionBox.setStyle("-fx-padding: 10; -fx-border-color: #ddd; -fx-border-width: 0 0 1 0;");

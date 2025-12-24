@@ -1,24 +1,29 @@
 package com.app.controller;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
 import com.app.App;
 import com.app.model.Chapter;
 import com.app.model.Course;
 import com.app.model.Lesson;
+import com.app.model.Quiz;
 import com.app.service.CourseService;
+import com.app.service.QuizService;
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
-import javafx.util.Callback;
-
-import java.io.IOException;
-import com.app.model.Quiz;
-import com.app.service.QuizService;
-import java.util.List;
 
 public class CourseBrowserController {
 
@@ -126,21 +131,53 @@ public class CourseBrowserController {
             return;
         }
 
-        Quiz quiz = quizzes.get(0);
+        // Create difficulty selection dialog
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("BEGINNER", "BEGINNER", "INTERMEDIATE", "ADVANCED");
+        dialog.setTitle("Select Difficulty");
+        dialog.setHeaderText("Choose quiz difficulty level");
+        dialog.setContentText("Difficulty:");
 
-        try {
-            FXMLLoader loader = new FXMLLoader(App.class.getResource("/view/quiz_view.fxml"));
-            Parent root = loader.load();
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            String selectedDifficulty = result.get();
 
-            QuizController controller = loader.getController();
-            controller.loadQuiz(quiz.getId());
+            // Map selected difficulty to keyword in quiz title
+            String keyword = getDifficultyKeyword(selectedDifficulty);
 
-            Stage stage = new Stage();
-            stage.setTitle("Quiz: " + quiz.getTitle());
-            stage.setScene(new Scene(root, 600, 500));
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
+            // Find quiz matching the difficulty
+            Quiz selectedQuiz = null;
+            for (Quiz quiz : quizzes) {
+                if (quiz.getTitle().toLowerCase().contains(keyword.toLowerCase())) {
+                    selectedQuiz = quiz;
+                    break;
+                }
+            }
+
+            if (selectedQuiz == null) {
+                System.out.println("No quiz found for difficulty: " + selectedDifficulty);
+                return;
+            }
+
+            try {
+                FXMLLoader loader = new FXMLLoader(App.class.getResource("/view/quiz_view.fxml"));
+                Parent root = loader.load();
+
+                QuizController controller = loader.getController();
+                controller.loadQuiz(selectedQuiz.getId());
+
+                Stage stage = new Stage();
+                stage.setTitle("Quiz: " + selectedQuiz.getTitle());
+                stage.setScene(new Scene(root, 600, 500));
+                stage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+    }
+
+    private String getDifficultyKeyword(String difficulty) {
+        // Convert to title case: BEGINNER -> Beginner, INTERMEDIATE -> Intermediate, etc.
+        if (difficulty == null || difficulty.isEmpty()) return difficulty;
+        return difficulty.substring(0, 1).toUpperCase() + difficulty.substring(1).toLowerCase();
     }
 }
