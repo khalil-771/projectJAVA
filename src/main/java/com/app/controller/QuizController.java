@@ -24,6 +24,8 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import javafx.animation.FadeTransition;
+import javafx.animation.ScaleTransition;
 
 public class QuizController {
 
