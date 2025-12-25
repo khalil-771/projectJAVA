@@ -17,7 +17,7 @@
         <HBox spacing="10" alignment="CENTER_RIGHT">
             <Label text="Filtrer par langue:" style="-fx-font-size: 14px;"/>
             <ComboBox fx:id="languageFilter" prefWidth="180"/>
-            <Button text="🔄 Actualiser" onAction="#refreshLeaderboard" 
+            <Button text="🔄 Actualiser" onAction="#refreshLeaderboards" 
                     style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 5;"/>
         </HBox>
     </HBox>

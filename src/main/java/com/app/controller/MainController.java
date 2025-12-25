@@ -1,21 +1,27 @@
 package com.app.controller;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.List;
+import java.util.ResourceBundle;
+
 import com.app.App;
 import com.app.model.Course;
 import com.app.model.User;
 import com.app.service.AuthenticationService;
 import com.app.service.CourseService;
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.List;
-import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
 
@@ -118,6 +124,9 @@ public class MainController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(App.class.getResource("/view/language_selection.fxml"));
             VBox quizSelectionView = loader.load(); // Assuming language_selection.fxml root is VBox
+
+            LanguageSelectionController controller = loader.getController();
+            controller.setContentArea(contentArea);
 
             contentArea.getChildren().clear();
             contentArea.getChildren().add(quizSelectionView);

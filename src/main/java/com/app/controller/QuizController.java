@@ -14,8 +14,7 @@ import com.app.service.BadgeService;
 import com.app.service.QuizService;
 import com.app.service.StatsService;
 
-import javafx.animation.FadeTransition;
-import javafx.animation.ScaleTransition;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -27,6 +26,9 @@ import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
 public class QuizController {
+
+    @FXML
+    private ComboBox<String> difficultyCombo; // New: For filtering questions by difficulty
 
     @FXML
     private Label quizTitleLabel;
@@ -44,8 +46,7 @@ public class QuizController {
     private final BadgeService badgeService = new BadgeService();
 
     private Quiz currentQuiz;
-
-    // Map<QuestionId, List<CheckBox/RadioButton>>
+    private int courseId; // To switch between difficulty levels
     private final Map<Integer, List<Control>> answerControls = new HashMap<>();
 
     public void loadQuiz(int quizId) {
@@ -53,7 +54,40 @@ public class QuizController {
         if (currentQuiz == null)
             return;
 
+        this.courseId = currentQuiz.getCourseId();
         quizTitleLabel.setText(currentQuiz.getTitle());
+
+        // Set difficulty combo based on quiz title
+        if (difficultyCombo != null) {
+            String title = currentQuiz.getTitle().toLowerCase();
+            if (title.contains("beginner")) {
+                difficultyCombo.setValue("BEGINNER");
+            } else if (title.contains("intermediate")) {
+                difficultyCombo.setValue("INTERMEDIATE");
+            } else if (title.contains("advanced")) {
+                difficultyCombo.setValue("ADVANCED");
+            } else {
+                difficultyCombo.setValue("All");
+            }
+            difficultyCombo.setItems(FXCollections.observableArrayList("BEGINNER", "INTERMEDIATE", "ADVANCED", "All"));
+            // Add listener to switch quiz when difficulty changes
+            difficultyCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null && !newVal.equals("All")) {
+                    // Find quiz for this course with matching difficulty
+                    List<Quiz> quizzes = quizService.getQuizzesForCourse(this.courseId);
+                    for (Quiz q : quizzes) {
+                        if (q.getTitle().toLowerCase().contains(newVal.toLowerCase())) {
+                            this.currentQuiz = quizService.getQuiz(q.getId());
+                            quizTitleLabel.setText(currentQuiz.getTitle());
+                            buildQuizUI();
+                            return;
+                        }
+                    }
+                }
+                buildQuizUI();
+            });
+        }
+
         buildQuizUI();
     }
 
@@ -71,16 +105,16 @@ public class QuizController {
         System.out.println("Number of questions in quiz: " + currentQuiz.getQuestions().size());
 
         int index = 1;
-<<<<<<< Updated upstream
-=======
         String selectedDifficulty = (difficultyCombo != null && difficultyCombo.getValue() != null)
                 ? difficultyCombo.getValue() : "All";
 
 
->>>>>>> Stashed changes
         for (Question q : currentQuiz.getQuestions()) {
             VBox questionBox = new VBox(5);
             questionBox.setStyle("-fx-padding: 10; -fx-border-color: #ddd; -fx-border-width: 0 0 1 0;");
+            if (!selectedDifficulty.equals("All") && !q.getDifficulty().equalsIgnoreCase(selectedDifficulty)) {
+                continue; 
+            }
 
             Label qLabel = new Label(index + ". " + q.getQuestionText());
             qLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");

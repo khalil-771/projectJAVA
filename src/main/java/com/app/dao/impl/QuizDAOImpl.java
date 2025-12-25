@@ -60,9 +60,10 @@ public class QuizDAOImpl implements QuizDAO {
         Quiz quiz = quizOpt.get();
 
         // Fetch Questions
-        String qSql = "SELECT * FROM questions limit 250";
+        String qSql = "SELECT * FROM questions WHERE quiz_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(qSql)) {
+            stmt.setInt(1, quizId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Question q = new Question();

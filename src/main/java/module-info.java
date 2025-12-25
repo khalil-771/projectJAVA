@@ -8,6 +8,7 @@ module com.app {
 
     opens com.app to javafx.fxml;
     opens com.app.controller to javafx.fxml;
+    opens com.app.model to javafx.base;
 
     exports com.app;
     exports com.app.controller;

@@ -130,10 +130,10 @@ public class LeaderboardDAOImpl implements LeaderboardDAO {
     public int getUserRank(int userId, LeaderboardType type, String languageTag) {
         String sql;
         if (languageTag == null) {
-            sql = "SELECT COUNT(*) + 1 as rank FROM user_stats " +
+            sql = "SELECT COUNT(*) + 1 as `rank` FROM user_stats " +
                     "WHERE total_points > (SELECT total_points FROM user_stats WHERE user_id = ?)";
         } else {
-            sql = "SELECT COUNT(*) + 1 as rank FROM user_language_stats " +
+            sql = "SELECT COUNT(*) + 1 as `rank` FROM user_language_stats " +
                     "WHERE language_tag = ? AND points > " +
                     "(SELECT points FROM user_language_stats WHERE user_id = ? AND language_tag = ?)";
         }

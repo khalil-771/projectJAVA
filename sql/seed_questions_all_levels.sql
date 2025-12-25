@@ -2,8 +2,15 @@
 -- Assumes database `elearning_db` exists and tables from database_setup.sql are present.
 USE elearning_db;
 
--- Ensure difficulty column exists (MySQL 8+ supports IF NOT EXISTS)
-ALTER TABLE questions ADD COLUMN IF NOT EXISTS difficulty VARCHAR(20) DEFAULT 'BEGINNER';
+-- Ensure difficulty column exists
+SET @sql = (SELECT IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'questions' AND COLUMN_NAME = 'difficulty') = 0,
+    'ALTER TABLE questions ADD COLUMN difficulty VARCHAR(20) DEFAULT \'BEGINNER\'',
+    'SELECT \'Column difficulty already exists\' AS message'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- Insert courses
 INSERT INTO courses (title, description, language_tag) VALUES
