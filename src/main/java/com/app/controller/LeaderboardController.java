@@ -31,12 +31,18 @@ public class LeaderboardController {
 
     private final LeaderboardService leaderboardService = new LeaderboardService();
     private String selectedLanguage = null; // null = global
+    private final java.util.Map<String, String> languageMap = new java.util.HashMap<>();
 
     @FXML
     public void initialize() {
         setupTables();
         setupLanguageFilter();
-        loadLeaderboards();
+
+        // Defer data loading until AFTER the page is displayed
+        // This allows the page to appear instantly
+        javafx.application.Platform.runLater(() -> {
+            loadLeaderboards();
+        });
     }
 
     private void setupTables() {
@@ -96,9 +102,11 @@ public class LeaderboardController {
     private void setupLanguageFilter() {
         ObservableList<String> languages = FXCollections.observableArrayList();
         languages.add("All Languages");
+        languageMap.put("All Languages", null);
 
         for (ProgrammingLanguage lang : ProgrammingLanguage.values()) {
             languages.add(lang.toString());
+            languageMap.put(lang.toString(), lang.getTag());
         }
 
         languageFilter.setItems(languages);
@@ -106,20 +114,14 @@ public class LeaderboardController {
 
         languageFilter.setOnAction(e -> {
             String selected = languageFilter.getValue();
-            if (selected.equals("All Languages")) {
-                selectedLanguage = null;
-            } else {
-                // Extract tag from "emoji name" format
-                for (ProgrammingLanguage lang : ProgrammingLanguage.values()) {
-                    if (lang.toString().equals(selected)) {
-                        selectedLanguage = lang.getTag();
-                        break;
-                    }
-                }
+            if (selected != null) {
+                selectedLanguage = languageMap.get(selected);
+                loadLeaderboards();
             }
-            loadLeaderboards();
         });
     }
+
+    // RE-WRITING THE WHOLE METHOD CORRECTLY BELOW
 
     private void loadLeaderboards() {
         loadDailyLeaderboard();
@@ -129,18 +131,78 @@ public class LeaderboardController {
     }
 
     private void loadDailyLeaderboard() {
-        List<LeaderboardEntry> entries = leaderboardService.getDailyLeaderboard(selectedLanguage);
-        dailyTable.setItems(FXCollections.observableArrayList(entries));
+        // Show loading indicator
+        dailyTable.setPlaceholder(new javafx.scene.control.ProgressIndicator());
+
+        javafx.concurrent.Task<List<LeaderboardEntry>> loadTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<LeaderboardEntry> call() throws Exception {
+                return leaderboardService.getDailyLeaderboard(selectedLanguage);
+            }
+        };
+
+        loadTask.setOnSucceeded(event -> {
+            List<LeaderboardEntry> entries = loadTask.getValue();
+            dailyTable.setItems(FXCollections.observableArrayList(entries));
+            dailyTable.setPlaceholder(new Label("Aucune donnée disponible"));
+        });
+
+        loadTask.setOnFailed(event -> {
+            dailyTable.setPlaceholder(new Label("Erreur de chargement"));
+            event.getSource().getException().printStackTrace();
+        });
+
+        new Thread(loadTask).start();
     }
 
     private void loadWeeklyLeaderboard() {
-        List<LeaderboardEntry> entries = leaderboardService.getWeeklyLeaderboard(selectedLanguage);
-        weeklyTable.setItems(FXCollections.observableArrayList(entries));
+        // Show loading indicator
+        weeklyTable.setPlaceholder(new javafx.scene.control.ProgressIndicator());
+
+        javafx.concurrent.Task<List<LeaderboardEntry>> loadTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<LeaderboardEntry> call() throws Exception {
+                return leaderboardService.getWeeklyLeaderboard(selectedLanguage);
+            }
+        };
+
+        loadTask.setOnSucceeded(event -> {
+            List<LeaderboardEntry> entries = loadTask.getValue();
+            weeklyTable.setItems(FXCollections.observableArrayList(entries));
+            weeklyTable.setPlaceholder(new Label("Aucune donnée disponible"));
+        });
+
+        loadTask.setOnFailed(event -> {
+            weeklyTable.setPlaceholder(new Label("Erreur de chargement"));
+            event.getSource().getException().printStackTrace();
+        });
+
+        new Thread(loadTask).start();
     }
 
     private void loadGlobalLeaderboard() {
-        List<LeaderboardEntry> entries = leaderboardService.getGlobalLeaderboard(selectedLanguage);
-        globalTable.setItems(FXCollections.observableArrayList(entries));
+        // Show loading indicator
+        globalTable.setPlaceholder(new javafx.scene.control.ProgressIndicator());
+
+        javafx.concurrent.Task<List<LeaderboardEntry>> loadTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<LeaderboardEntry> call() throws Exception {
+                return leaderboardService.getGlobalLeaderboard(selectedLanguage);
+            }
+        };
+
+        loadTask.setOnSucceeded(event -> {
+            List<LeaderboardEntry> entries = loadTask.getValue();
+            globalTable.setItems(FXCollections.observableArrayList(entries));
+            globalTable.setPlaceholder(new Label("Aucune donnée disponible"));
+        });
+
+        loadTask.setOnFailed(event -> {
+            globalTable.setPlaceholder(new Label("Erreur de chargement"));
+            event.getSource().getException().printStackTrace();
+        });
+
+        new Thread(loadTask).start();
     }
 
     private void updateUserRank() {
@@ -160,11 +222,11 @@ public class LeaderboardController {
         int rank = leaderboardService.getUserRank(userId, currentType, selectedLanguage);
 
         if (rank > 0) {
-            String langText = selectedLanguage != null ? " in " + selectedLanguage.toUpperCase() : "";
-            userRankLabel.setText("Your Rank: #" + rank + langText);
+            String langText = selectedLanguage != null ? " en " + selectedLanguage.toUpperCase() : "";
+            userRankLabel.setText("#" + rank + langText);
             userRankLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2196F3;");
         } else {
-            userRankLabel.setText("Complete quizzes to get ranked!");
+            userRankLabel.setText("Complétez des quiz pour être classé !");
             userRankLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #999;");
         }
     }

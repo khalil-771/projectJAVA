@@ -1,6 +1,6 @@
 package com.app.controller;
 
-import com.app.util.LevelCalculator;
+import com.app.model.LevelCalculator;
 import com.app.model.UserBadge;
 import com.app.model.UserStats;
 import com.app.service.AuthenticationService;
@@ -102,11 +102,22 @@ public class DashboardController {
 
         // XP Label
         if (xpLabel != null) {
-            int currentLevelPoints = LevelCalculator.getPointsForLevel(stats.getCurrentLevel());
-            int nextLevelPoints = LevelCalculator.getPointsForLevel(stats.getCurrentLevel() + 1);
-            int pointsInLevel = stats.getExperiencePoints() - currentLevelPoints;
-            int needed = nextLevelPoints - currentLevelPoints;
-            xpLabel.setText(pointsInLevel + " / " + needed + " XP");
+            int currentXP = stats.getExperiencePoints();
+            int currentLevel = stats.getCurrentLevel();
+
+            int currentLevelBaseXP = LevelCalculator.getPointsForLevel(currentLevel);
+            int nextLevelBaseXP = LevelCalculator.getPointsForLevel(currentLevel + 1);
+
+            int xpInLevel = currentXP - currentLevelBaseXP;
+            int xpNeededForLevel = nextLevelBaseXP - currentLevelBaseXP;
+
+            // Safety check for negative values due to formula changes
+            if (xpInLevel < 0)
+                xpInLevel = 0;
+            if (xpNeededForLevel <= 0)
+                xpNeededForLevel = 100;
+
+            xpLabel.setText(xpInLevel + " / " + xpNeededForLevel + " XP");
         }
     }
 

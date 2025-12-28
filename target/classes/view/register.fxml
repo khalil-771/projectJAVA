@@ -29,8 +29,7 @@
                            style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>
                     <Label text="Créez votre compte gratuitement" 
                            style="-fx-font-size: 18px; -fx-text-fill: rgba(255,255,255,0.9);"/>
-                    <Label text="Accès illimité à tous les quiz" 
-                           style="-fx-font-size: 14px; -fx-text-fill: rgba(255,255,255,0.7); -fx-padding: 20 0 0 0;"/>
+
                 </VBox>
             </Pane>
         </StackPane>
@@ -158,8 +157,7 @@
         </VBox>
         
         <!-- Footer -->
-        <Label text="© 2025 Plateforme QCM" 
-               style="-fx-text-fill: #95a5a6; -fx-font-size: 11px;"/>
+
         
     </VBox>
     

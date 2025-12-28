@@ -2,8 +2,11 @@ package com.app.service;
 
 import com.app.dao.UserStatsDAO;
 import com.app.dao.impl.UserStatsDAOImpl;
+import com.app.dao.UserLanguageStatsDAO;
+import com.app.dao.impl.UserLanguageStatsDAOImpl;
 import com.app.model.LevelCalculator;
 import com.app.model.UserStats;
+import com.app.model.UserLanguageStats;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -13,9 +16,11 @@ import java.util.Optional;
 public class StatsService {
 
     private final UserStatsDAO statsDAO;
+    private final UserLanguageStatsDAO languageStatsDAO;
 
     public StatsService() {
         this.statsDAO = new UserStatsDAOImpl();
+        this.languageStatsDAO = new UserLanguageStatsDAOImpl();
     }
 
     /**
@@ -39,7 +44,8 @@ public class StatsService {
     /**
      * Update stats after completing a quiz
      */
-    public void updateStatsAfterQuiz(int userId, int pointsEarned, int correctAnswers, int totalQuestions) {
+    public void updateStatsAfterQuiz(int userId, String languageTag, int pointsEarned, int correctAnswers,
+            int totalQuestions, int score) {
         UserStats stats = getUserStats(userId);
         if (stats == null)
             return;
@@ -71,6 +77,37 @@ public class StatsService {
 
         // Save to database
         statsDAO.update(stats);
+
+        // Update Language Specific Stats
+        if (languageTag != null) {
+            updateLanguageStats(userId, languageTag, pointsEarned, correctAnswers, totalQuestions, score);
+        }
+    }
+
+    private void updateLanguageStats(int userId, String languageTag, int pointsEarned, int correctAnswers,
+            int totalQuestions, int score) {
+        Optional<UserLanguageStats> langStatsOpt = languageStatsDAO.findByUserAndLanguage(userId, languageTag);
+        UserLanguageStats langStats;
+
+        if (langStatsOpt.isPresent()) {
+            langStats = langStatsOpt.get();
+            langStats.setPoints(langStats.getPoints() + pointsEarned);
+            langStats.setQuizzesPlayed(langStats.getQuizzesPlayed() + 1);
+            langStats.setCorrectAnswers(langStats.getCorrectAnswers() + correctAnswers);
+            langStats.setTotalQuestions(langStats.getTotalQuestions() + totalQuestions);
+            if (score > langStats.getBestScore()) {
+                langStats.setBestScore(score);
+            }
+            languageStatsDAO.update(langStats);
+        } else {
+            langStats = new UserLanguageStats(userId, languageTag);
+            langStats.setPoints(pointsEarned);
+            langStats.setQuizzesPlayed(1);
+            langStats.setCorrectAnswers(correctAnswers);
+            langStats.setTotalQuestions(totalQuestions);
+            langStats.setBestScore(score);
+            languageStatsDAO.create(langStats);
+        }
     }
 
     /**

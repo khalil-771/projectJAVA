@@ -5,6 +5,7 @@ import com.app.dao.impl.QuizHistoryDAOImpl;
 import com.app.model.*;
 import com.app.service.AuthenticationService;
 import com.app.service.BadgeService;
+import com.app.service.CourseService;
 import com.app.service.QuizService;
 import com.app.service.StatsService;
 import com.app.util.BadgeNotificationUtil;
@@ -41,6 +42,7 @@ public class QuizControllerEnhanced {
     private final QuizService quizService = new QuizService();
     private final StatsService statsService = new StatsService();
     private final BadgeService badgeService = new BadgeService();
+    private final CourseService courseService = new CourseService();
     private final QuizHistoryDAO historyDAO = new QuizHistoryDAOImpl();
 
     private Quiz currentQuiz;
@@ -190,7 +192,12 @@ public class QuizControllerEnhanced {
 
         // Update stats
         int userId = AuthenticationService.getCurrentUser().getId();
-        statsService.updateStatsAfterQuiz(userId, totalPoints, correctCount, totalQuestions);
+        String languageTag = null;
+        Course course = courseService.getCourse(currentQuiz.getCourseId());
+        if (course != null) {
+            languageTag = course.getLanguageTag();
+        }
+        statsService.updateStatsAfterQuiz(userId, languageTag, totalPoints, correctCount, totalQuestions, score);
 
         // Check badges
         List<Badge> newBadges = badgeService.checkQuizAchievements(userId, score, 100, isPerfect);

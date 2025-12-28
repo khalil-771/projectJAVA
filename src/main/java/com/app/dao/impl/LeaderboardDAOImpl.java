@@ -80,7 +80,6 @@ public class LeaderboardDAOImpl implements LeaderboardDAO {
                     "(SELECT COUNT(*) FROM user_badges WHERE user_id = u.id) as badge_count " +
                     "FROM users u " +
                     "JOIN user_stats us ON u.id = us.user_id " +
-                    "WHERE u.is_active = TRUE " +
                     "ORDER BY us.total_points DESC, us.current_level DESC " +
                     "LIMIT ?";
         } else {
@@ -91,7 +90,7 @@ public class LeaderboardDAOImpl implements LeaderboardDAO {
                     "FROM users u " +
                     "JOIN user_language_stats uls ON u.id = uls.user_id " +
                     "LEFT JOIN user_stats us ON u.id = us.user_id " +
-                    "WHERE u.is_active = TRUE AND uls.language_tag = ? " +
+                    "WHERE uls.language_tag = ? " +
                     "ORDER BY uls.points DESC " +
                     "LIMIT ?";
         }
@@ -128,30 +127,45 @@ public class LeaderboardDAOImpl implements LeaderboardDAO {
 
     @Override
     public int getUserRank(int userId, LeaderboardType type, String languageTag) {
-        String sql;
+        String countSql;
+        String rankSql;
+
         if (languageTag == null) {
-            sql = "SELECT COUNT(*) + 1 as `rank` FROM user_stats " +
+            countSql = "SELECT COUNT(*) FROM user_stats WHERE user_id = ?";
+            rankSql = "SELECT COUNT(*) + 1 as `rank` FROM user_stats " +
                     "WHERE total_points > (SELECT total_points FROM user_stats WHERE user_id = ?)";
         } else {
-            sql = "SELECT COUNT(*) + 1 as `rank` FROM user_language_stats " +
+            countSql = "SELECT COUNT(*) FROM user_language_stats WHERE user_id = ? AND language_tag = ?";
+            rankSql = "SELECT COUNT(*) + 1 as `rank` FROM user_language_stats " +
                     "WHERE language_tag = ? AND points > " +
                     "(SELECT points FROM user_language_stats WHERE user_id = ? AND language_tag = ?)";
         }
 
-        try (Connection conn = DatabaseConnection.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            if (languageTag == null) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            // 1. Check if user has stats
+            try (PreparedStatement stmt = conn.prepareStatement(countSql)) {
                 stmt.setInt(1, userId);
-            } else {
-                stmt.setString(1, languageTag);
-                stmt.setInt(2, userId);
-                stmt.setString(3, languageTag);
+                if (languageTag != null)
+                    stmt.setString(2, languageTag);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next() && rs.getInt(1) == 0)
+                    return -1;
             }
 
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("rank");
+            // 2. Calculate rank
+            try (PreparedStatement stmt = conn.prepareStatement(rankSql)) {
+                if (languageTag == null) {
+                    stmt.setInt(1, userId);
+                } else {
+                    stmt.setString(1, languageTag);
+                    stmt.setInt(2, userId);
+                    stmt.setString(3, languageTag);
+                }
+
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    return rs.getInt("rank");
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

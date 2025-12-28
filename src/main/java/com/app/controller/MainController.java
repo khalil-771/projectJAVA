@@ -9,7 +9,6 @@ import com.app.App;
 import com.app.model.Course;
 import com.app.model.User;
 import com.app.service.AuthenticationService;
-import com.app.service.CourseService;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -22,19 +21,19 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.BorderPane;
 
 public class MainController implements Initializable {
 
     @FXML
     private Label userLabel; // Renamed from usernameLabel to match FXML
-    @FXML
-    private VBox courseListContainer;
+
     @FXML
     private StackPane contentArea;
     @FXML
     private SplitPane mainSplitPane;
-
-    private final CourseService courseService = new CourseService();
+    @FXML
+    private VBox adminBox;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -44,50 +43,15 @@ public class MainController implements Initializable {
             userLabel.setText("Utilisateur: " + user.getUsername());
         }
 
-        loadCourses();
+        // Load Dashboard by default
+        showDashboard();
 
-        // Load Course Browser by default if courses exist
-        // or a welcome screen
-    }
-
-    private void loadCourses() {
-        // Fixed: Check if container exists before trying to add children
-        if (courseListContainer == null) {
-            // System.out.println("Warning: courseListContainer is null, skipping dynamic
-            // course loading.");
-            return;
-        }
-
-        List<Course> courses = courseService.getAllCourses();
-        ToggleGroup courseGroup = new ToggleGroup();
-
-        for (Course course : courses) {
-            ToggleButton btn = new ToggleButton(course.getTitle());
-            btn.setToggleGroup(courseGroup);
-            btn.setMaxWidth(Double.MAX_VALUE);
-            btn.getStyleClass().add("course-button");
-
-            btn.setOnAction(e -> {
-                if (btn.isSelected()) {
-                    loadCourseContent(course.getId());
-                }
-            });
-            courseListContainer.getChildren().add(btn);
-        }
-    }
-
-    private void loadCourseContent(int courseId) {
-        try {
-            FXMLLoader loader = new FXMLLoader(App.class.getResource("/view/course_browser.fxml"));
-            StackPane courseView = loader.load();
-
-            CourseBrowserController controller = loader.getController();
-            controller.loadCourse(courseId);
-
-            contentArea.getChildren().clear();
-            contentArea.getChildren().add(courseView);
-        } catch (IOException e) {
-            e.printStackTrace();
+        // Check if Admin
+        if (user != null && user.getRole() == User.Role.ROLE_ADMIN) {
+            if (adminBox != null) {
+                adminBox.setVisible(true);
+                adminBox.setManaged(true);
+            }
         }
     }
 
@@ -138,8 +102,19 @@ public class MainController implements Initializable {
 
     @FXML
     private void showQuizRoom() {
-        // Placeholder for Multiplayer Room
-        showError("Fonctionnalité 'Salle Multijoueur' en cours de développement !");
+        try {
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("/view/multiplayer_menu.fxml"));
+            VBox view = loader.load();
+
+            MultiplayerMenuController controller = loader.getController();
+            controller.setContentArea(contentArea);
+
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(view);
+        } catch (IOException e) {
+            e.printStackTrace();
+            showError("Failed to load multiplayer lobby: " + e.getMessage());
+        }
     }
 
     @FXML
@@ -153,6 +128,32 @@ public class MainController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
             showError("Failed to load profile: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void showAdminStatistics() {
+        try {
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("/view/admin_statistics.fxml"));
+            VBox view = loader.load();
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(view);
+        } catch (IOException e) {
+            e.printStackTrace();
+            showError("Failed to load admin statistics: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void showQuestionManagement() {
+        try {
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("/view/question_management.fxml"));
+            VBox view = loader.load();
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(view);
+        } catch (IOException e) {
+            e.printStackTrace();
+            showError("Failed to load question management: " + e.getMessage());
         }
     }
 

@@ -1,7 +1,7 @@
 -- Sample Questions Data for E-Learning Platform
 -- This file contains 50+ questions across multiple programming languages
 
-USE elearning_db;
+USE quiztests;
 
 -- ============================================
 -- HTML Questions (10 questions)

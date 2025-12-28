@@ -10,7 +10,7 @@
     <!-- Top Bar -->
     <top>
         <HBox style="-fx-background-color: #2c3e50; -fx-padding: 15 20;" alignment="CENTER_LEFT" spacing="20">
-            <Label text="📚 Plateforme QCM" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+            <Label text="📚 DevQuiz" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="userLabel" text="Utilisateur: admin" style="-fx-text-fill: white; -fx-font-size: 14px;"/>
             <Button text="Déconnexion" onAction="#handleLogout" 
@@ -38,6 +38,16 @@
                         style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-font-size: 13px; -fx-background-radius: 5;"/>
                 <Button text="🎮 Salle Multijoueur" onAction="#showQuizRoom" maxWidth="Infinity" 
                         style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-font-size: 13px; -fx-background-radius: 5;"/>
+                
+                <!-- Admin Section -->
+                <VBox fx:id="adminBox" spacing="10" managed="false" visible="false">
+                    <Separator style="-fx-background-color: #7f8c8d; -fx-padding: 5 0;"/>
+                    <Label text="Administration" style="-fx-text-fill: #bdc3c7; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+                    <Button text="📊 Stats Globales" onAction="#showAdminStatistics" maxWidth="Infinity" 
+                            style="-fx-background-color: #607D8B; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-font-size: 13px; -fx-background-radius: 5;"/>
+                    <Button text="⚙️ Gérer Questions" onAction="#showQuestionManagement" maxWidth="Infinity" 
+                            style="-fx-background-color: #455a64; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-font-size: 13px; -fx-background-radius: 5;"/>
+                </VBox>
             </VBox>
             
             <!-- Content Area -->

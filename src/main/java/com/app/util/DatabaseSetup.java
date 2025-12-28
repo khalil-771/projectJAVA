@@ -16,43 +16,34 @@ public class DatabaseSetup {
         try {
             System.out.println("Checking database initialization...");
 
-            // Connect to MySQL server without database specified
+            // Connect to MySQL server
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
                     Statement stmt = conn.createStatement()) {
 
-                // Read the SQL script
-                String sqlPath = "database_setup.sql";
+                // Create database if not exists
+                stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS quiztests");
+                stmt.execute("USE quiztests");
 
-                String content = "";
-                if (Files.exists(Paths.get(sqlPath))) {
-                    content = new String(Files.readAllBytes(Paths.get(sqlPath)));
-                } else {
-                    System.err.println("database_setup.sql not found at project root. Skipping auto-init.");
-                    return;
-                }
-
-                String[] statements = content.split(";");
-
-                for (String sql : statements) {
-                    if (sql.trim().isEmpty())
-                        continue;
-                    try {
-                        stmt.execute(sql);
-                    } catch (Exception e) {
-                        // Ignore
+                // NOTE: We checking if tables exist to decide on repair
+                boolean tablesExist = false;
+                try (java.sql.ResultSet rs = conn.getMetaData().getTables("quiztests", null, "users", null)) {
+                    if (rs.next()) {
+                        tablesExist = true;
                     }
                 }
 
-                // Ensure correct admin password
+                if (!tablesExist) {
+                    System.out.println("⚠️ Tables missing. Running structure restoration...");
+                    runScript(conn, "database_structure.sql");
+                }
+
+                // Ensure correct admin user (Idempotent check)
                 ensureAdminUser(conn);
 
-                System.out.println("Database initialization completed.");
+                // Ensure a test student user (Idempotent check)
+                ensureStudentUser(conn);
 
-                // Run gamification extensions
-                runGamificationScript(conn);
-
-                // Run seed data
-                runSeedScript(conn);
+                System.out.println("Database check completed. Automatic seeding is disabled.");
             }
 
         } catch (Exception e) {
@@ -61,26 +52,49 @@ public class DatabaseSetup {
         }
     }
 
+    private static void runScript(Connection conn, String fileName) {
+        try {
+            String path = fileName; // Assume root
+            if (Files.exists(Paths.get(path))) {
+                String content = new String(Files.readAllBytes(Paths.get(path)));
+                String[] statements = content.split(";");
+                try (Statement stmt = conn.createStatement()) {
+                    for (String sql : statements) {
+                        if (sql.trim().isEmpty())
+                            continue;
+                        try {
+                            stmt.execute(sql);
+                        } catch (Exception ex) {
+                            // System.err.println("Sql warning: " + ex.getMessage());
+                        }
+                    }
+                }
+                System.out.println("✅ Script " + fileName + " executed.");
+            } else {
+                System.err.println("❌ Script " + fileName + " not found!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private static void ensureAdminUser(Connection conn) {
         try {
-            // Need to select database first
-            try (Statement stmt = conn.createStatement()) {
-                stmt.execute("USE elearning_db");
-            }
-
+            // Check if admin exists
             String checkSql = "SELECT count(*) FROM users WHERE username = 'admin'";
             try (Statement stmt = conn.createStatement();
                     java.sql.ResultSet rs = stmt.executeQuery(checkSql)) {
 
                 if (rs.next() && rs.getInt(1) > 0) {
-                    // Update existing admin password
+                    // Admin exists, FORCE UPDATE to ensure password is valid
+                    // This fixes the issue where a bad hash might have been inserted manually
                     String updateSql = "UPDATE users SET password_hash = ? WHERE username = 'admin'";
                     try (java.sql.PreparedStatement pstmt = conn.prepareStatement(updateSql)) {
                         String hash = org.mindrot.jbcrypt.BCrypt.hashpw("admin123",
                                 org.mindrot.jbcrypt.BCrypt.gensalt());
                         pstmt.setString(1, hash);
                         pstmt.executeUpdate();
-                        System.out.println("Admin password updated to 'admin123'");
+                        System.out.println("✅ Admin password RE-SYNCED to 'admin123'");
                     }
                 } else {
                     // Insert new admin
@@ -93,7 +107,7 @@ public class DatabaseSetup {
                         pstmt.setString(3, hash);
                         pstmt.setString(4, "ROLE_ADMIN");
                         pstmt.executeUpdate();
-                        System.out.println("Admin user created with password 'admin123'");
+                        System.out.println("Admin user created.");
                     }
                 }
             }
@@ -103,65 +117,44 @@ public class DatabaseSetup {
         }
     }
 
-    private static void runGamificationScript(Connection conn) {
+    private static void ensureStudentUser(Connection conn) {
         try {
-            System.out.println("Running gamification extensions...");
+            String checkSql = "SELECT count(*) FROM users WHERE username = 'student'";
+            try (Statement stmt = conn.createStatement();
+                    java.sql.ResultSet rs = stmt.executeQuery(checkSql)) {
 
-            String gamificationPath = "database_gamification.sql";
-            if (!Files.exists(Paths.get(gamificationPath))) {
-                System.out.println("Gamification script not found, skipping.");
-                return;
-            }
-
-            String content = new String(Files.readAllBytes(Paths.get(gamificationPath)));
-            String[] statements = content.split(";");
-
-            try (Statement stmt = conn.createStatement()) {
-                for (String sql : statements) {
-                    if (sql.trim().isEmpty())
-                        continue;
-                    try {
-                        stmt.execute(sql);
-                    } catch (Exception e) {
-                        // Ignore errors (table might already exist)
+                if (rs.next() && rs.getInt(1) > 0) {
+                    // Student exists, FORCE UPDATE
+                    String updateSql = "UPDATE users SET password_hash = ? WHERE username = 'student'";
+                    try (java.sql.PreparedStatement pstmt = conn.prepareStatement(updateSql)) {
+                        String hash = org.mindrot.jbcrypt.BCrypt.hashpw("student123",
+                                org.mindrot.jbcrypt.BCrypt.gensalt());
+                        pstmt.setString(1, hash);
+                        pstmt.executeUpdate();
+                        System.out.println("✅ Student password RE-SYNCED to 'student123'");
+                    }
+                } else {
+                    // Insert new student
+                    String insertSql = "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)";
+                    try (java.sql.PreparedStatement pstmt = conn.prepareStatement(insertSql)) {
+                        String hash = org.mindrot.jbcrypt.BCrypt.hashpw("student123",
+                                org.mindrot.jbcrypt.BCrypt.gensalt());
+                        pstmt.setString(1, "student");
+                        pstmt.setString(2, "student@example.com");
+                        pstmt.setString(3, hash);
+                        pstmt.setString(4, "ROLE_STUDENT");
+                        pstmt.executeUpdate();
+                        System.out.println("Student user created.");
                     }
                 }
             }
-
-            System.out.println("Gamification extensions completed.");
         } catch (Exception e) {
-            System.err.println("Failed to run gamification script: " + e.getMessage());
+            System.err.println("Failed to ensure student user: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    private static void runSeedScript(Connection conn) {
-        try {
-            System.out.println("Running seed data script...");
+    // private static void runGamificationScript(Connection conn) { ... } // Removed
+    // private static void runSeedScript(Connection conn) { ... } // Removed
 
-            String seedPath = "sql/seed_questions_all_levels.sql";
-            if (!Files.exists(Paths.get(seedPath))) {
-                System.out.println("Seed script not found at " + seedPath + ", skipping.");
-                return;
-            }
-
-            String content = new String(Files.readAllBytes(Paths.get(seedPath)));
-            String[] statements = content.split(";");
-
-            try (Statement stmt = conn.createStatement()) {
-                for (String sql : statements) {
-                    if (sql.trim().isEmpty())
-                        continue;
-                    try {
-                        stmt.execute(sql);
-                    } catch (Exception e) {
-                        // Ignore errors (data might already exist)
-                    }
-                }
-            }
-
-            System.out.println("Seed data script completed.");
-        } catch (Exception e) {
-            System.err.println("Failed to run seed script: " + e.getMessage());
-        }
-    }
 }

@@ -1,4 +1,4 @@
-# E-Learning Platform - README
+# DevQuiz - E-Learning Platform
 
 ## 🎓 Complete Gamified E-Learning Platform
 

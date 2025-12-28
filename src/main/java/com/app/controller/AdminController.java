@@ -2,8 +2,9 @@ package com.app.controller;
 
 import com.app.model.Badge;
 import com.app.model.Question;
+import com.app.service.AdminQuestionService;
 import com.app.service.BadgeService;
-import com.app.service.QuizService;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -18,7 +19,19 @@ public class AdminController {
     @FXML
     private TableView<Question> questionsTable;
     @FXML
+    private TableColumn<Question, String> questionIdCol;
+    @FXML
+    private TableColumn<Question, String> questionTextCol;
+    @FXML
+    private TableColumn<Question, String> questionLangCol;
+    @FXML
+    private TableColumn<Question, String> questionDiffCol;
+    @FXML
     private TableView<Badge> badgesTable;
+    @FXML
+    private TableColumn<Badge, String> badgeNameCol;
+    @FXML
+    private TableColumn<Badge, String> badgeDescCol;
     @FXML
     private TextArea questionTextArea;
     @FXML
@@ -30,14 +43,21 @@ public class AdminController {
     @FXML
     private Label statusLabel;
 
-    private final QuizService quizService = new QuizService();
+    private final AdminQuestionService questionService = new AdminQuestionService();
     private final BadgeService badgeService = new BadgeService();
 
     @FXML
     public void initialize() {
         setupLanguageCombo();
         setupDifficultyCombo();
-        loadBadges();
+        setupTableColumns();
+
+        // Defer data loading until AFTER the page is displayed
+        // This allows the page to appear instantly
+        javafx.application.Platform.runLater(() -> {
+            loadBadges();
+            loadQuestions();
+        });
     }
 
     private void setupLanguageCombo() {
@@ -49,34 +69,148 @@ public class AdminController {
 
     private void setupDifficultyCombo() {
         difficultyCombo.setItems(FXCollections.observableArrayList(
-                "BEGINNER", "INTERMEDIATE", "ADVANCED"));
-        difficultyCombo.setValue("BEGINNER");
+                "DÉBUTANT", "INTERMÉDIAIRE", "AVANCÉ"));
+        difficultyCombo.setValue("DÉBUTANT");
+    }
+
+    private void setupTableColumns() {
+        // Setup question table columns if they exist
+        if (questionIdCol != null) {
+            questionIdCol.setCellValueFactory(
+                    cellData -> new SimpleStringProperty(String.valueOf(cellData.getValue().getId())));
+        }
+        if (questionTextCol != null) {
+            questionTextCol
+                    .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getQuestionText()));
+        }
+        if (questionLangCol != null) {
+            questionLangCol
+                    .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getLanguageTag()));
+        }
+        if (questionDiffCol != null) {
+            questionDiffCol
+                    .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDifficulty()));
+        }
+
+        // Setup badge table columns if they exist
+        if (badgeNameCol != null) {
+            badgeNameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName()));
+        }
+        if (badgeDescCol != null) {
+            badgeDescCol
+                    .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDescription()));
+        }
     }
 
     private void loadBadges() {
-        List<Badge> badges = badgeService.getAllBadges();
-        badgesTable.setItems(FXCollections.observableArrayList(badges));
+        // Load badges asynchronously
+        javafx.concurrent.Task<List<Badge>> loadTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<Badge> call() throws Exception {
+                return badgeService.getAllBadges();
+            }
+        };
+
+        loadTask.setOnSucceeded(event -> {
+            List<Badge> badges = loadTask.getValue();
+            if (badgesTable != null) {
+                badgesTable.setItems(FXCollections.observableArrayList(badges));
+            }
+        });
+
+        loadTask.setOnFailed(event -> {
+            Throwable ex = loadTask.getException();
+            ex.printStackTrace();
+            showStatus("Erreur de chargement des badges: " + ex.getMessage(), false);
+        });
+
+        new Thread(loadTask).start();
+    }
+
+    private void loadQuestions() {
+        // Show loading indicator immediately
+        if (questionsTable != null) {
+            questionsTable.setPlaceholder(new javafx.scene.control.ProgressIndicator());
+        }
+        showStatus("Chargement des questions...", true);
+
+        // Load questions asynchronously
+        javafx.concurrent.Task<List<Question>> loadTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<Question> call() throws Exception {
+                return questionService.getAllQuestions();
+            }
+        };
+
+        loadTask.setOnSucceeded(event -> {
+            List<Question> questions = loadTask.getValue();
+            if (questionsTable != null) {
+                questionsTable.setItems(FXCollections.observableArrayList(questions));
+                questionsTable.setPlaceholder(new Label("Aucune question disponible"));
+            }
+            showStatus("Chargé " + questions.size() + " questions", true);
+        });
+
+        loadTask.setOnFailed(event -> {
+            Throwable ex = loadTask.getException();
+            ex.printStackTrace();
+            if (questionsTable != null) {
+                questionsTable.setPlaceholder(new Label("Erreur de chargement"));
+            }
+            showStatus("Erreur: " + ex.getMessage(), false);
+        });
+
+        // Run in background thread
+        new Thread(loadTask).start();
     }
 
     @FXML
     private void addQuestion() {
         String questionText = questionTextArea.getText();
         String language = languageCombo.getValue();
-        String difficulty = difficultyCombo.getValue();
+        String difficultySelection = difficultyCombo.getValue();
+        // Map French difficulty to English for DB
+        String difficulty = "BEGINNER";
+        if ("INTERMÉDIAIRE".equals(difficultySelection))
+            difficulty = "INTERMEDIATE";
+        if ("AVANCÉ".equals(difficultySelection))
+            difficulty = "ADVANCED";
+
         String pointsStr = pointsField.getText();
 
-        if (questionText.isEmpty()) {
-            showStatus("Please enter question text", false);
+        if (questionText == null || questionText.trim().isEmpty()) {
+            showStatus("Veuillez entrer le texte de la question", false);
             return;
         }
 
         try {
             int points = Integer.parseInt(pointsStr);
-            // TODO: Implement question creation in QuizService
-            showStatus("Question added successfully!", true);
-            questionTextArea.clear();
+
+            // Create question object
+            Question question = new Question();
+            question.setQuizId(1); // Default quiz ID
+            question.setQuestionText(questionText);
+            question.setType(Question.QuestionType.MULTIPLE_CHOICE);
+            question.setExplanation(""); // Can be extended later
+            question.setDifficulty(difficulty);
+            question.setLanguageTag(language);
+            question.setPoints(points);
+
+            // For now, create with empty answers - can be extended with answer inputs
+            boolean success = questionService.createQuestion(question, java.util.Collections.emptyList());
+
+            if (success) {
+                showStatus("Question ajoutée avec succès !", true);
+                questionTextArea.clear();
+                loadQuestions(); // Refresh table
+            } else {
+                showStatus("Échec de l'ajout de la question", false);
+            }
         } catch (NumberFormatException e) {
-            showStatus("Invalid points value", false);
+            showStatus("Valeur de points invalide", false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showStatus("Error: " + e.getMessage(), false);
         }
     }
 
@@ -84,22 +218,40 @@ public class AdminController {
     private void deleteQuestion() {
         Question selected = questionsTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showStatus("Please select a question to delete", false);
+            showStatus("Veuillez sélectionner une question à supprimer", false);
             return;
         }
-        // TODO: Implement deletion
-        showStatus("Question deleted", true);
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmer la suppression");
+        alert.setHeaderText("Supprimer cette question ?");
+        alert.setContentText("ID: " + selected.getId());
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                boolean success = questionService.deleteQuestion(selected.getId());
+                if (success) {
+                    showStatus("Question supprimée avec succès !", true);
+                    loadQuestions(); // Refresh table
+                } else {
+                    showStatus("Échec de la suppression de la question", false);
+                }
+            }
+        });
     }
 
     @FXML
     private void refreshData() {
         loadBadges();
-        showStatus("Data refreshed", true);
+        loadQuestions();
+        showStatus("Données actualisées", true);
     }
 
     private void showStatus(String message, boolean success) {
-        statusLabel.setText(message);
-        statusLabel.setStyle(success ? "-fx-text-fill: green; -fx-font-weight: bold;"
-                : "-fx-text-fill: red; -fx-font-weight: bold;");
+        if (statusLabel != null) {
+            statusLabel.setText(message);
+            statusLabel.setStyle(success ? "-fx-text-fill: green; -fx-font-weight: bold;"
+                    : "-fx-text-fill: red; -fx-font-weight: bold;");
+        }
     }
 }

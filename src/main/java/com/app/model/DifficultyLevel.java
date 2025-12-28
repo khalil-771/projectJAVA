@@ -1,9 +1,9 @@
 package com.app.model;
 
 public enum DifficultyLevel {
-    BEGINNER("Beginner", 10, "🟢"),
-    INTERMEDIATE("Intermediate", 20, "🟡"),
-    ADVANCED("Advanced", 30, "🔴");
+    BEGINNER("Débutant", 10, "🟢"),
+    INTERMEDIATE("Intermédiaire", 20, "🟡"),
+    ADVANCED("Avancé", 30, "🔴");
 
     private final String displayName;
     private final int basePoints;

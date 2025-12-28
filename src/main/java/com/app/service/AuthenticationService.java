@@ -36,13 +36,21 @@ public class AuthenticationService {
     }
 
     public boolean register(String username, String email, String password) {
-        if (userDAO.findByUsername(username).isPresent() || userDAO.findByEmail(email).isPresent()) {
-            return false; // User already exists
+        System.out.println("AuthService: Registering user: " + username);
+        if (userDAO.findByUsername(username).isPresent()) {
+            System.out.println("AuthService: Registration failed - Username already exists: " + username);
+            return false;
+        }
+        if (userDAO.findByEmail(email).isPresent()) {
+            System.out.println("AuthService: Registration failed - Email already exists: " + email);
+            return false;
         }
 
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
         User newUser = new User(username, email, hashedPassword, User.Role.ROLE_STUDENT);
-        return userDAO.create(newUser);
+        boolean created = userDAO.create(newUser);
+        System.out.println("AuthService: Registration " + (created ? "SUCCESS" : "FAILED") + " for " + username);
+        return created;
     }
 
     public void logout() {

@@ -10,35 +10,37 @@
     
     <!-- Header -->
     <VBox alignment="CENTER" spacing="10">
-        <Label text="🌐 Choose Your Language" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-        <Label text="Select a programming language to practice" style="-fx-text-fill: #666;"/>
+        <Label text="🌐 Choisissez votre Langage" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+        <Label text="Sélectionnez un langage pour pratiquer" style="-fx-text-fill: #666;"/>
     </VBox>
     
     <!-- Language List -->
     <VBox spacing="10" VBox.vgrow="ALWAYS">
-        <Label text="Available Languages:" style="-fx-font-weight: bold;"/>
+        <Label text="Langages Disponibles :" style="-fx-font-weight: bold;"/>
         <ListView fx:id="languageList" VBox.vgrow="ALWAYS" 
                   style="-fx-border-color: #E0E0E0; -fx-border-width: 1; -fx-border-radius: 5;"/>
     </VBox>
     
-    <!-- Selection Display -->
-    <VBox alignment="CENTER" spacing="10" style="-fx-background-color: #E3F2FD; -fx-padding: 15; -fx-background-radius: 5;">
-        <Label fx:id="selectedLabel" text="Selected: None" 
+    <!-- Selection and Difficulty -->
+    <VBox spacing="15" style="-fx-background-color: #FAFAFA; -fx-padding: 15; -fx-background-radius: 5; -fx-border-color: #EEE; -fx-border-radius: 5;">
+        <Label fx:id="selectedLabel" text="Sélectionné : Aucun" 
                style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1976D2;"/>
+               
+        <VBox spacing="5">
+            <Label text="Difficulté :" style="-fx-font-weight: bold; -fx-text-fill: #555;"/>
+            <ComboBox fx:id="difficultyCombo" prefWidth="250" style="-fx-font-size: 14px;"/>
+        </VBox>
     </VBox>
     
     <!-- Buttons -->
     <HBox spacing="15" alignment="CENTER">
-        <Button fx:id="startButton" text="Start Quiz" onAction="#startQuiz" 
+        <Button fx:id="startButton" text="Commencer" onAction="#startQuiz" 
                 style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 30; -fx-font-size: 14px; -fx-cursor: hand;"
                 defaultButton="true"/>
-        <Button text="Cancel" onAction="#cancel" 
-                style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 30; -fx-font-size: 14px; -fx-cursor: hand;"
-                cancelButton="true"/>
     </HBox>
     
     <!-- Info -->
-    <Label text="💡 Tip: Each language has its own leaderboard and mastery badges!" 
+    <Label text="💡 Astuce : Chaque langage a son propre classement et ses badges !" 
            style="-fx-text-fill: #666; -fx-font-size: 12px; -fx-text-alignment: center;" 
            wrapText="true"/>
     

@@ -62,9 +62,11 @@ public class RegisterController {
         }
 
         // Register user
+        System.out.println("RegisterController: Requesting registration for: " + username);
         boolean success = authService.register(username, email, password);
 
         if (success) {
+            System.out.println("RegisterController: Registration SUCCESS for: " + username);
             showSuccess("Inscription réussie! Vous pouvez maintenant vous connecter.");
 
             // Wait 2 seconds then go to login
@@ -77,6 +79,7 @@ public class RegisterController {
                 }
             }).start();
         } else {
+            System.out.println("RegisterController: Registration FAILED for: " + username);
             showError("Échec de l'inscription. Le nom d'utilisateur existe peut-être déjà.");
         }
     }
@@ -84,14 +87,10 @@ public class RegisterController {
     @FXML
     private void goToLogin() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/login.fxml"));
-            Parent root = loader.load();
-
-            Stage stage = (Stage) registerButton.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Connexion - Plateforme QCM");
+            com.app.App.setRoot("login");
         } catch (Exception e) {
             e.printStackTrace();
+            showError("Erreur de navigation vers la page de connexion.");
         }
     }
 

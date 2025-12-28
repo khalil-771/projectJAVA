@@ -1,7 +1,7 @@
 -- Database Initialization Script
 
-CREATE DATABASE IF NOT EXISTS elearning_db;
-USE elearning_db;
+CREATE DATABASE IF NOT EXISTS quiztests;
+USE quiztests;
 
 -- 1. Users Table
 CREATE TABLE IF NOT EXISTS users (

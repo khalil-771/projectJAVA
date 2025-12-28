@@ -122,8 +122,8 @@ public class QuizDAOImpl implements QuizDAO {
     public List<Question> findQuestionsByCourseAndDifficulty(int courseId, String difficulty) {
         List<Question> questions = new ArrayList<>();
         String sql = "SELECT q.* FROM questions q " +
-                     "JOIN quizzes qu ON q.quiz_id = qu.id " +
-                     "WHERE qu.course_id = ? AND q.difficulty = ?";
+                "JOIN quizzes qu ON q.quiz_id = qu.id " +
+                "WHERE qu.course_id = ? AND q.difficulty = ?";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, courseId);
@@ -145,5 +145,21 @@ public class QuizDAOImpl implements QuizDAO {
             e.printStackTrace();
         }
         return questions;
+    }
+
+    @Override
+    public boolean saveQuizResult(int userId, int quizId, int score, boolean passed) {
+        String sql = "INSERT INTO user_quiz_results (user_id, quiz_id, score, passed) VALUES (?, ?, ?, ?)";
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            stmt.setInt(2, quizId);
+            stmt.setInt(3, score);
+            stmt.setBoolean(4, passed);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

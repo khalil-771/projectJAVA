@@ -3,6 +3,8 @@ package com.app.roomquiz;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.app.model.Quiz;
+
 /**
  * Room for multiplayer quiz battles
  */
@@ -10,12 +12,17 @@ public class Room {
     private String roomId;
     private String roomName;
     private String hostUserId;
+    private String hostIp;
+    private String language;
+    private String difficulty;
     private int maxPlayers;
     private RoomStatus status;
     private Map<String, Player> players;
     private Quiz currentQuiz;
     private int currentQuestionIndex;
     private Map<String, Integer> scores;
+    private Map<String, Integer> times; // Time in seconds
+    private int currentQuizId; // ID of the quiz being played (synced from DB)
 
     public enum RoomStatus {
         WAITING, // Waiting for players
@@ -24,14 +31,19 @@ public class Room {
         FINISHED // Quiz completed
     }
 
-    public Room(String roomId, String roomName, String hostUserId, int maxPlayers) {
+    public Room(String roomId, String roomName, String hostUserId, String hostIp, String language, String difficulty,
+            int maxPlayers) {
         this.roomId = roomId;
         this.roomName = roomName;
         this.hostUserId = hostUserId;
+        this.hostIp = hostIp;
+        this.language = language;
+        this.difficulty = difficulty;
         this.maxPlayers = maxPlayers;
         this.status = RoomStatus.WAITING;
         this.players = new ConcurrentHashMap<>();
         this.scores = new ConcurrentHashMap<>();
+        this.times = new ConcurrentHashMap<>();
         this.currentQuestionIndex = 0;
     }
 
@@ -49,7 +61,17 @@ public class Room {
 
         players.put(player.getUserId(), player);
         scores.put(player.getUserId(), 0);
+        times.put(player.getUserId(), 0);
         return true;
+    }
+
+    /**
+     * Internal use: add player when loading from DB (bypass status check)
+     */
+    public void addPlayerFromDB(Player player, int score, int time) {
+        players.put(player.getUserId(), player);
+        scores.put(player.getUserId(), score);
+        times.put(player.getUserId(), time);
     }
 
     /**
@@ -70,7 +92,10 @@ public class Room {
      */
     public boolean startQuiz(Quiz quiz) {
         if (players.size() < 2) {
-            return false; // Need at least 2 players
+            // Allow 1 player for testing/offline feel if needed, but rule says
+            // "Multiplayer"
+            // Let's relax it to 1 for testing if user is alone
+            // return false;
         }
 
         this.currentQuiz = quiz;
@@ -137,6 +162,22 @@ public class Room {
         return maxPlayers;
     }
 
+    public String getLanguage() {
+        return language;
+    }
+
+    public String getDifficulty() {
+        return difficulty;
+    }
+
+    public String getHostIp() {
+        return hostIp;
+    }
+
+    public void setHostIp(String hostIp) {
+        this.hostIp = hostIp;
+    }
+
     public RoomStatus getStatus() {
         return status;
     }
@@ -161,87 +202,20 @@ public class Room {
         return scores;
     }
 
+    public Map<String, Integer> getTimes() {
+        return times;
+    }
+
+    public int getCurrentQuizId() {
+        return currentQuizId;
+    }
+
+    public void setCurrentQuizId(int currentQuizId) {
+        this.currentQuizId = currentQuizId;
+    }
+
     @Override
     public String toString() {
         return roomName + " (" + players.size() + "/" + maxPlayers + ") - " + status;
-    }
-}
-
-/**
- * Player in a room
- */
-class Player {
-    private String userId;
-    private String username;
-    private boolean isReady;
-
-    public Player(String userId, String username) {
-        this.userId = userId;
-        this.username = username;
-        this.isReady = false;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public boolean isReady() {
-        return isReady;
-    }
-
-    public void setReady(boolean ready) {
-        isReady = ready;
-    }
-}
-
-/**
- * Quiz for multiplayer (simplified)
- */
-class Quiz {
-    private int id;
-    private String title;
-    private List<Question> questions;
-
-    public Quiz(int id, String title, List<Question> questions) {
-        this.id = id;
-        this.title = title;
-        this.questions = questions;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public List<Question> getQuestions() {
-        return questions;
-    }
-}
-
-/**
- * Question for multiplayer (simplified)
- */
-class Question {
-    private int id;
-    private String text;
-
-    public Question(int id, String text) {
-        this.id = id;
-        this.text = text;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public String getText() {
-        return text;
     }
 }

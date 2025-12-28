@@ -18,7 +18,8 @@ public class CourseService {
         return courseDAO.findAllActiveCourses();
     }
 
-    public Course getCourseWithContent(int courseId) {
-        return courseDAO.getFullCourseHierarchy(courseId);
+    public Course getCourse(int courseId) {
+        return courseDAO.findCourseById(courseId).orElse(null);
     }
+
 }

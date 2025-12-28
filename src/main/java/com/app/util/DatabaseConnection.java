@@ -13,7 +13,8 @@ public class DatabaseConnection {
 
     static {
         // TODO: Update these credentials with your local MySQL configuration
-        config.setJdbcUrl("jdbc:mysql://localhost:3306/elearning_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC");
+        config.setJdbcUrl(
+                "jdbc:mysql://localhost:3306/quiztests?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC");
         config.setUsername("root");
         config.setPassword("");
         config.addDataSourceProperty("cachePrepStmts", "true");
@@ -22,12 +23,13 @@ public class DatabaseConnection {
         ds = new HikariDataSource(config);
     }
 
-    private DatabaseConnection() {}
+    private DatabaseConnection() {
+    }
 
     public static Connection getConnection() throws SQLException {
         return ds.getConnection();
     }
-    
+
     public static void close() {
         if (ds != null && !ds.isClosed()) {
             ds.close();

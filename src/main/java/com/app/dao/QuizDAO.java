@@ -14,4 +14,6 @@ public interface QuizDAO {
     Quiz getFullQuiz(int quizId); // Fetch questions and answers
 
     List<Question> findQuestionsByCourseAndDifficulty(int courseId, String difficulty);
+
+    boolean saveQuizResult(int userId, int quizId, int score, boolean passed);
 }

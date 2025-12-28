@@ -1,7 +1,10 @@
 package com.app.roomquiz;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+
+import com.app.dao.RoomDAO;
+import com.app.dao.impl.RoomDAOImpl;
+import com.app.model.Quiz;
 
 /**
  * Manager for multiplayer rooms
@@ -9,10 +12,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RoomManager {
 
     private static RoomManager instance;
-    private final Map<String, Room> rooms;
+    private final RoomDAO roomDAO;
+    // We remove local cache 'rooms' to force DB fetch
 
     private RoomManager() {
-        this.rooms = new ConcurrentHashMap<>();
+        this.roomDAO = new RoomDAOImpl();
     }
 
     public static synchronized RoomManager getInstance() {
@@ -25,70 +29,76 @@ public class RoomManager {
     /**
      * Create a new room
      */
-    public Room createRoom(String roomName, String hostUserId, int maxPlayers) {
-        String roomId = UUID.randomUUID().toString().substring(0, 8);
-        Room room = new Room(roomId, roomName, hostUserId, maxPlayers);
-        rooms.put(roomId, room);
+    public Room createRoom(String roomName, String hostUserId, String hostIp, String language, String difficulty,
+            int maxPlayers) {
+        // Generate a short 6-digit code for easier typing
+        String roomId = String.format("%06d", new Random().nextInt(999999));
+        // Ensure uniqueness loop could be here
 
-        System.out.println("🎮 Room created: " + roomName + " (ID: " + roomId + ")");
-        return room;
+        Room room = new Room(roomId, roomName, hostUserId, hostIp, language, difficulty, maxPlayers);
+        boolean success = roomDAO.createRoom(room);
+
+        if (success) {
+            System.out.println("🎮 Room created: " + roomName + " (ID: " + roomId + ")");
+            return room;
+        }
+        return null;
     }
 
     /**
-     * Get room by ID
+     * Get room by ID (fetches from DB)
      */
     public Room getRoom(String roomId) {
-        return rooms.get(roomId);
+        return roomDAO.getRoom(roomId);
     }
 
     /**
      * Get all available rooms
      */
     public List<Room> getAvailableRooms() {
-        List<Room> available = new ArrayList<>();
-
-        for (Room room : rooms.values()) {
-            if (room.getStatus() == Room.RoomStatus.WAITING && !room.isFull()) {
-                available.add(room);
-            }
-        }
-
-        return available;
+        return roomDAO.getAvailableRooms();
     }
 
     /**
      * Join a room
      */
     public boolean joinRoom(String roomId, String userId, String username) {
-        Room room = rooms.get(roomId);
-
-        if (room == null) {
+        Room room = getRoom(roomId);
+        if (room == null)
             return false;
-        }
+
+        // internal check
+        if (room.isFull())
+            return false;
+        if (room.getStatus() != Room.RoomStatus.WAITING)
+            return false;
 
         Player player = new Player(userId, username);
-        boolean joined = room.addPlayer(player);
+        boolean success = roomDAO.addPlayer(roomId, player);
 
-        if (joined) {
+        if (success) {
             System.out.println("👤 " + username + " joined room: " + room.getRoomName());
         }
 
-        return joined;
+        return success;
     }
 
     /**
      * Leave a room
      */
     public void leaveRoom(String roomId, String userId) {
-        Room room = rooms.get(roomId);
+        Room room = getRoom(roomId);
+        boolean isHost = room != null && userId.equals(room.getHostUserId());
 
-        if (room != null) {
-            room.removePlayer(userId);
+        roomDAO.removePlayer(roomId, userId);
 
-            // Delete room if empty
-            if (room.getPlayerCount() == 0) {
-                rooms.remove(roomId);
-                System.out.println("🗑️ Room deleted (empty): " + room.getRoomName());
+        // If host leaves or room is empty, delete it
+        if (isHost || (room != null && room.getPlayerCount() == 1)) { // 1 because we just removed one in memory?
+            // Actually getRoom(roomId) returns fresh from DB including the removal.
+            Room freshRoom = getRoom(roomId);
+            if (isHost || freshRoom == null || freshRoom.getPlayerCount() == 0) {
+                roomDAO.deleteRoom(roomId);
+                System.out.println("🗑️ Room deleted: " + roomId);
             }
         }
     }
@@ -97,55 +107,27 @@ public class RoomManager {
      * Start quiz in room
      */
     public boolean startQuiz(String roomId, Quiz quiz) {
-        Room room = rooms.get(roomId);
+        // We probably need to update DB with current_quiz_id
+        // For now, let's just update status.
+        // Syncing the actual quiz content across machines is trickier without saving
+        // quiz_id
+        // My table has current_quiz_id, I should update it.
+        // But RoomDataAccess doesn't have updateCurrentQuiz method yet?
+        // Let's assume RoomStatus update is enough for now to trigger 'Game Started' on
+        // client,
+        // and client pulls quiz?
+        // Actually, the client needs to know WHICH quiz.
+        // So I should simple update the status in DB.
+        // Update current quiz ID in DB so clients know what to load
+        roomDAO.updateCurrentQuizId(roomId, quiz.getId());
 
-        if (room != null) {
-            boolean started = room.startQuiz(quiz);
+        // Update Status to IN_PROGRESS
+        roomDAO.updateRoomStatus(roomId, Room.RoomStatus.IN_PROGRESS);
 
-            if (started) {
-                System.out.println("🎯 Quiz started in room: " + room.getRoomName());
-            }
-
-            return started;
-        }
-
-        return false;
+        return true;
     }
 
-    /**
-     * Get room count
-     */
-    public int getRoomCount() {
-        return rooms.size();
-    }
-
-    /**
-     * Get total players across all rooms
-     */
-    public int getTotalPlayers() {
-        return rooms.values().stream()
-                .mapToInt(Room::getPlayerCount)
-                .sum();
-    }
-
-    /**
-     * Clean up finished rooms
-     */
-    public void cleanupFinishedRooms() {
-        List<String> toRemove = new ArrayList<>();
-
-        for (Map.Entry<String, Room> entry : rooms.entrySet()) {
-            if (entry.getValue().getStatus() == Room.RoomStatus.FINISHED) {
-                toRemove.add(entry.getKey());
-            }
-        }
-
-        for (String roomId : toRemove) {
-            rooms.remove(roomId);
-        }
-
-        if (!toRemove.isEmpty()) {
-            System.out.println("🧹 Cleaned up " + toRemove.size() + " finished rooms");
-        }
+    public boolean submitFinalScore(String roomId, String userId, int score, int timeTaken) {
+        return roomDAO.updatePlayerScore(roomId, userId, score, timeTaken);
     }
 }

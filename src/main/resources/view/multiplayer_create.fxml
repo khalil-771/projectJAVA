@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="CENTER" spacing="30" styleClass="multiplayer-root" stylesheets="@../css/multiplayer.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.app.controller.MultiplayerCreateController">
+   <children>
+      <Label styleClass="title-label" text="CRÉER UNE SALLE" />
+      
+      <VBox maxWidth="600" spacing="25" styleClass="glass-pane">
+         <children>
+            <GridPane hgap="20" vgap="20">
+               <columnConstraints>
+                  <ColumnConstraints minWidth="150" />
+                  <ColumnConstraints hgrow="ALWAYS" />
+               </columnConstraints>
+               <children>
+                  <Label styleClass="label-white" text="Nom de la Salle:" GridPane.rowIndex="0" />
+                  <TextField fx:id="roomNameField" promptText="Nom de votre salle" styleClass="modern-field" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                  
+                  <Label styleClass="label-white" text="Votre IP (Auto):" GridPane.rowIndex="1" />
+                  <TextField fx:id="hostIpField" editable="false" styleClass="modern-field" style="-fx-opacity: 0.8;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  
+                  <Label styleClass="label-white" text="Langage:" GridPane.rowIndex="2" />
+                  <ComboBox fx:id="languageCombo" maxWidth="Infinity" styleClass="modern-field" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  
+                  <Label styleClass="label-white" text="Difficulté:" GridPane.rowIndex="3" />
+                  <ComboBox fx:id="difficultyCombo" maxWidth="Infinity" styleClass="modern-field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               </children>
+            </GridPane>
+            
+            <HBox alignment="CENTER" spacing="20" style="-fx-padding: 10 0 0 0;">
+               <children>
+                  <Button onAction="#handleCancel" styleClass="secondary-button" text="Annuler" />
+                  <Button onAction="#handleCreate" styleClass="modern-button" text="Créer la Salle" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+      
+      <Label text="Note: Communiquez le code généré à vos amis pour qu'ils rejoignent." textFill="#666" />
+   </children>
+</VBox>

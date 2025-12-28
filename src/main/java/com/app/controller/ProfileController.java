@@ -1,6 +1,8 @@
 package com.app.controller;
 
 import com.app.model.Badge;
+import com.app.model.LevelCalculator;
+import com.app.model.UserBadge;
 import com.app.model.UserStats;
 import com.app.service.AuthenticationService;
 import com.app.service.BadgeService;
@@ -19,19 +21,29 @@ public class ProfileController {
     @FXML
     private Label usernameLabel;
     @FXML
+    private Label emailLabel;
+    @FXML
     private Label levelLabel;
     @FXML
-    private Label xpLabel;
+    private Label levelTitleLabel;
     @FXML
     private ProgressBar levelProgressBar;
     @FXML
+    private Label experienceLabel;
+    @FXML
+    private Label totalPointsLabel;
+    @FXML
     private Label streakLabel;
+    @FXML
+    private Label bestStreakLabel;
     @FXML
     private Label accuracyLabel;
     @FXML
     private Label quizzesLabel;
     @FXML
-    private FlowPane badgesContainer;
+    private Label badgeCountLabel;
+    @FXML
+    private FlowPane allBadgesPane;
 
     private final StatsService statsService = new StatsService();
     private final BadgeService badgeService = new BadgeService();
@@ -50,9 +62,13 @@ public class ProfileController {
         int userId = AuthenticationService.getCurrentUser().getId();
         String username = AuthenticationService.getCurrentUser().getUsername();
 
-        // Set username
+        // Set user info
         if (usernameLabel != null) {
-            usernameLabel.setText(username);
+            usernameLabel.setText(username != null ? username : "Utilisateur");
+        }
+        if (emailLabel != null) {
+            String email = AuthenticationService.getCurrentUser().getEmail();
+            emailLabel.setText(email != null ? email : "Aucun email");
         }
 
         // Load stats
@@ -63,29 +79,37 @@ public class ProfileController {
             if (levelLabel != null) {
                 levelLabel.setText(String.valueOf(stats.getCurrentLevel()));
             }
+            if (levelTitleLabel != null) {
+                levelTitleLabel.setText(LevelCalculator.getLevelTitle(stats.getCurrentLevel()));
+            }
 
-            if (xpLabel != null && levelProgressBar != null) {
-                int currentXP = stats.getExperiencePoints(); // Assuming experiencePoints tracks total XP for leveling
+            if (experienceLabel != null && levelProgressBar != null) {
+                int currentXP = stats.getExperiencePoints();
                 int currentLevel = stats.getCurrentLevel();
 
-                // Calculate XP relative to current level
-                int currentLevelBaseXP = com.app.util.LevelCalculator.getPointsForLevel(currentLevel);
-                int nextLevelBaseXP = com.app.util.LevelCalculator.getPointsForLevel(currentLevel + 1);
+                int currentLevelBaseXP = LevelCalculator.getPointsForLevel(currentLevel);
+                int nextLevelBaseXP = LevelCalculator.getPointsForLevel(currentLevel + 1);
 
                 int xpInLevel = currentXP - currentLevelBaseXP;
-                int xpNeededForNextLevel = nextLevelBaseXP - currentLevelBaseXP;
+                int xpNeededForLevel = nextLevelBaseXP - currentLevelBaseXP;
 
-                // Avoid division by zero
-                if (xpNeededForNextLevel <= 0)
-                    xpNeededForNextLevel = 100;
+                if (xpNeededForLevel <= 0)
+                    xpNeededForLevel = 100;
 
-                xpLabel.setText(xpInLevel + " / " + xpNeededForNextLevel + " XP");
-                levelProgressBar.setProgress((double) xpInLevel / xpNeededForNextLevel);
+                experienceLabel.setText(xpInLevel + " / " + xpNeededForLevel + " XP");
+                levelProgressBar.setProgress((double) xpInLevel / xpNeededForLevel);
+            }
+
+            if (totalPointsLabel != null) {
+                totalPointsLabel.setText(stats.getTotalPoints() + " XP");
             }
 
             // Streak
             if (streakLabel != null) {
                 streakLabel.setText(stats.getCurrentStreak() + " jours");
+            }
+            if (bestStreakLabel != null) {
+                bestStreakLabel.setText(stats.getBestStreak() + " jours");
             }
 
             // Accuracy
@@ -95,7 +119,6 @@ public class ProfileController {
 
             // Quizzes
             if (quizzesLabel != null) {
-                // Fixed: getTotalQuizzes -> getTotalQuizzesPlayed
                 quizzesLabel.setText(String.valueOf(stats.getTotalQuizzesPlayed()));
             }
         }
@@ -105,19 +128,22 @@ public class ProfileController {
     }
 
     private void loadBadges(int userId) {
-        if (badgesContainer == null)
+        if (allBadgesPane == null)
             return;
 
-        badgesContainer.getChildren().clear();
+        allBadgesPane.getChildren().clear();
 
         List<Badge> allBadges = badgeService.getAllBadges();
-        // Fixed: List<UserBadge> type
-        List<com.app.model.UserBadge> earnedBadges = badgeService.getUserBadges(userId);
+        List<UserBadge> earnedBadges = badgeService.getUserBadges(userId);
+
+        if (badgeCountLabel != null) {
+            badgeCountLabel.setText(earnedBadges.size() + " badges gagnés");
+        }
 
         if (allBadges.isEmpty()) {
             Label noBadges = new Label("Aucun badge disponible");
             noBadges.setStyle("-fx-text-fill: #999;");
-            badgesContainer.getChildren().add(noBadges);
+            allBadgesPane.getChildren().add(noBadges);
             return;
         }
 
@@ -126,7 +152,7 @@ public class ProfileController {
                     .anyMatch(b -> b.getBadgeId() == badge.getId());
 
             VBox badgeCard = createBadgeCard(badge, isEarned);
-            badgesContainer.getChildren().add(badgeCard);
+            allBadgesPane.getChildren().add(badgeCard);
         }
     }
 

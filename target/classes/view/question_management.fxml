@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="20" style="-fx-background-color: #f5f7fa; -fx-padding: 30;" 
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.app.controller.QuestionManagementController">
+    
+    <HBox alignment="CENTER_LEFT" spacing="20">
+        <VBox spacing="5" HBox.hgrow="ALWAYS">
+            <Label text="⚙️ Gestion des Questions" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <Label text="Ajoutez, modifiez ou supprimez des questions de la plateforme" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;"/>
+        </VBox>
+        <Button text="+ Ajouter une Question" onAction="#handleAddQuestion" 
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 5;"/>
+    </HBox>
+
+    <Separator/>
+
+    <!-- Filters -->
+    <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8;">
+        <Label text="Filtrer par :" style="-fx-font-weight: bold;"/>
+        <ComboBox fx:id="languageFilter" promptText="Langage" prefWidth="150" onAction="#filterQuestions"/>
+        <ComboBox fx:id="difficultyFilter" promptText="Difficulté" prefWidth="150" onAction="#filterQuestions"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="searchField" promptText="Rechercher une question..." prefWidth="300" onKeyReleased="#filterQuestions"/>
+    </HBox>
+
+    <!-- Questions Table -->
+    <TableView fx:id="questionTable" VBox.vgrow="ALWAYS" style="-fx-background-radius: 8;">
+        <columns>
+            <TableColumn fx:id="idCol" text="ID" prefWidth="50"/>
+            <TableColumn fx:id="textCol" text="Texte de la Question" prefWidth="400"/>
+            <TableColumn fx:id="langCol" text="Langage" prefWidth="100"/>
+            <TableColumn fx:id="difficultyCol" text="Difficulté" prefWidth="120"/>
+            <TableColumn fx:id="typeCol" text="Type" prefWidth="120"/>
+            <TableColumn fx:id="actionsCol" text="Actions" prefWidth="150"/>
+        </columns>
+    </TableView>
+
+</VBox>

@@ -25,12 +25,11 @@
                 <!-- Center Content -->
                 <VBox alignment="CENTER" layoutX="50" layoutY="200" spacing="20" prefWidth="400">
                     <Label text="📚" style="-fx-font-size: 80px;"/>
-                    <Label text="Plateforme QCM" 
+                    <Label text="DevQuiz" 
                            style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>
                     <Label text="Apprenez, Testez, Progressez" 
                            style="-fx-font-size: 18px; -fx-text-fill: rgba(255,255,255,0.9);"/>
-                    <Label text="50+ Questions | 5 Langages | Badges &amp; Niveaux" 
-                           style="-fx-font-size: 14px; -fx-text-fill: rgba(255,255,255,0.7); -fx-padding: 20 0 0 0;"/>
+
                 </VBox>
             </Pane>
         </StackPane>
@@ -120,24 +119,11 @@
                 </HBox>
             </VBox>
             
-            <!-- Advice Note -->
-            <VBox alignment="CENTER" spacing="6" 
-                  style="-fx-background-color: #fff3cd; 
-                         -fx-background-radius: 8; 
-                         -fx-padding: 14;
-                         -fx-border-color: #ffeeba;
-                         -fx-border-width: 1;">
-                <Label text="💡 Note" 
-                       style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #856404;"/>
-                <Label text="Utilisez un compte admin pour tester toutes les fonctionnalités." 
-                       style="-fx-font-size: 12px; -fx-text-fill: #856404;"/>
-            </VBox>
             
         </VBox>
         
         <!-- Footer -->
-        <Label text="© 2025 Plateforme QCM" 
-               style="-fx-text-fill: #95a5a6; -fx-font-size: 11px;"/>
+
         
     </VBox>
     

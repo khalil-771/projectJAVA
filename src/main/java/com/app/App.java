@@ -9,9 +9,6 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-/**
- * JavaFX App - Plateforme QCM
- */
 public class App extends Application {
 
     private static Scene scene;
@@ -21,19 +18,24 @@ public class App extends Application {
     public void start(Stage stage) throws IOException {
         primaryStage = stage;
 
-        // Initialize database
         DatabaseSetup.initializeDatabase();
+        com.app.util.DatabaseSchema.initialize();
 
         scene = new Scene(loadFXML("login"));
 
-        // Set window size for PC
         stage.setWidth(1280);
         stage.setHeight(800);
         stage.setMinWidth(1024);
         stage.setMinHeight(768);
 
         stage.setScene(scene);
-        stage.setTitle("Plateforme QCM - E-Learning");
+        stage.setTitle("DevQuiz");
+
+        stage.setOnCloseRequest(event -> {
+            com.app.network.NetworkManager.getInstance().stopAll();
+            System.exit(0);
+        });
+
         stage.show();
     }
 

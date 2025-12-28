@@ -7,8 +7,8 @@
       fx:controller="com.app.controller.AdminController" 
       spacing="15" style="-fx-padding: 20; -fx-background-color: #f5f5f5;">
     
-    <Label text="⚙️ Admin Panel" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-    <Label text="Manage questions, badges, and users" style="-fx-text-fill: #666;"/>
+    <Label text="⚙️ Panneau Admin" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+    <Label text="Gérer les questions, badges et utilisateurs" style="-fx-text-fill: #666;"/>
     
     <TabPane fx:id="adminTabs" VBox.vgrow="ALWAYS">
         <tabs>
@@ -17,25 +17,25 @@
                 <content>
                     <VBox spacing="15" style="-fx-padding: 15;">
                         <HBox spacing="10">
-                            <Button text="➕ Add Question" onAction="#addQuestion" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
-                            <Button text="🗑️ Delete Selected" onAction="#deleteQuestion" style="-fx-background-color: #F44336; -fx-text-fill: white;"/>
-                            <Button text="🔄 Refresh" onAction="#refreshData"/>
+                            <Button text="➕ Ajouter une Question" onAction="#addQuestion" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+                            <Button text="🗑️ Supprimer Sélection" onAction="#deleteQuestion" style="-fx-background-color: #F44336; -fx-text-fill: white;"/>
+                            <Button text="🔄 Actualiser" onAction="#refreshData"/>
                         </HBox>
                         
                         <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 5;">
-                            <Label text="Add New Question" style="-fx-font-weight: bold;"/>
-                            <TextArea fx:id="questionTextArea" promptText="Enter question text..." prefRowCount="3"/>
+                            <Label text="Ajouter une nouvelle question" style="-fx-font-weight: bold;"/>
+                            <TextArea fx:id="questionTextArea" promptText="Entrez le texte de la question..." prefRowCount="3"/>
                             <HBox spacing="10">
                                 <VBox spacing="5">
-                                    <Label text="Language:"/>
+                                    <Label text="Langage :"/>
                                     <ComboBox fx:id="languageCombo" prefWidth="150"/>
                                 </VBox>
                                 <VBox spacing="5">
-                                    <Label text="Difficulty:"/>
+                                    <Label text="Difficulté :"/>
                                     <ComboBox fx:id="difficultyCombo" prefWidth="150"/>
                                 </VBox>
                                 <VBox spacing="5">
-                                    <Label text="Points:"/>
+                                    <Label text="Points :"/>
                                     <TextField fx:id="pointsField" text="10" prefWidth="80"/>
                                 </VBox>
                             </HBox>
@@ -43,7 +43,7 @@
                         
                         <TableView fx:id="questionsTable" VBox.vgrow="ALWAYS">
                             <placeholder>
-                                <Label text="No questions yet"/>
+                                <Label text="Pas encore de questions"/>
                             </placeholder>
                         </TableView>
                     </VBox>
@@ -54,10 +54,10 @@
             <Tab text="🏆 Badges" closable="false">
                 <content>
                     <VBox spacing="15" style="-fx-padding: 15;">
-                        <Label text="Badge List" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <Label text="Liste des Badges" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
                         <TableView fx:id="badgesTable" VBox.vgrow="ALWAYS">
                             <placeholder>
-                                <Label text="Loading badges..."/>
+                                <Label text="Chargement des badges..."/>
                             </placeholder>
                         </TableView>
                     </VBox>
@@ -65,11 +65,11 @@
             </Tab>
             
             <!-- Analytics -->
-            <Tab text="📊 Analytics" closable="false">
+            <Tab text="📊 Analytique" closable="false">
                 <content>
                     <VBox spacing="15" style="-fx-padding: 15;" alignment="CENTER">
-                        <Label text="Analytics Dashboard" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                        <Label text="Coming soon: User statistics, quiz completion rates, popular languages, etc."/>
+                        <Label text="Tableau de Bord Analytique" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                        <Label text="Bientôt disponible : statistiques utilisateurs, taux de complétion, etc."/>
                     </VBox>
                 </content>
             </Tab>

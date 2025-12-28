@@ -43,17 +43,17 @@ public class LevelCalculator {
      */
     public static String getLevelTitle(int level) {
         if (level >= 50)
-            return "Legend";
+            return "Légende";
         if (level >= 40)
-            return "Master";
+            return "Maître";
         if (level >= 30)
             return "Expert";
         if (level >= 20)
-            return "Advanced";
+            return "Avancé";
         if (level >= 10)
-            return "Intermediate";
+            return "Intermédiaire";
         if (level >= 5)
-            return "Apprentice";
-        return "Beginner";
+            return "Apprenti";
+        return "Débutant";
     }
 }

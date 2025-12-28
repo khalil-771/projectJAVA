@@ -12,13 +12,13 @@
     <BorderPane>
         <top>
             <VBox style="-fx-padding: 10; -fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 0 0 1 0;" spacing="5">
-                <Label fx:id="courseTitleLabel" text="Course Title">
+                <Label fx:id="courseTitleLabel" text="Titre du Cours">
                     <font>
                         <Font name="System Bold" size="16.0"/>
                     </font>
                 </Label>
-                <Button text="Try It Yourself" fx:id="tryItButton" onAction="#openEditor" style="-fx-background-color: #3498db; -fx-text-fill: white;" />
-                <Button text="Take Quiz" onAction="#openQuiz" style="-fx-background-color: #9b59b6; -fx-text-fill: white;" />
+                <Button text="Essayer le Code" fx:id="tryItButton" onAction="#openEditor" style="-fx-background-color: #3498db; -fx-text-fill: white;" />
+                <Button text="Passer le Quiz" onAction="#openQuiz" style="-fx-background-color: #9b59b6; -fx-text-fill: white;" />
             </VBox>
         </top>
         <center>

@@ -54,8 +54,14 @@ public class QuizService {
     }
 
     public void saveResult(User user, Quiz quiz, int score) {
-        // TODO: Implement result saving to DB (Phase 6)
-        System.out.println("User " + user.getUsername() + " scored " + score + " on " + quiz.getTitle());
+        boolean passed = score >= quiz.getPassingScore();
+        boolean success = quizDAO.saveQuizResult(user.getId(), quiz.getId(), score, passed);
+        if (success) {
+            System.out.println(
+                    "✅ Result saved: User " + user.getUsername() + " scored " + score + " on " + quiz.getTitle());
+        } else {
+            System.err.println("❌ Failed to save result for User " + user.getUsername());
+        }
     }
 
     /**

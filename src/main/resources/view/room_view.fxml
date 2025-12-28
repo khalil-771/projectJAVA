@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane stylesheets="@../css/multiplayer.css" styleClass="multiplayer-root" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.app.controller.RoomController">
+    <top>
+        <VBox alignment="CENTER" spacing="5" styleClass="glass-pane" style="-fx-padding: 20;">
+            <Label fx:id="roomNameLabel" text="Nom de la Salle" styleClass="title-label" style="-fx-font-size: 24px;" />
+            <Label fx:id="roomIdLabel" text="CODE: 123456" style="-fx-text-fill: #777; -fx-font-weight: bold;" />
+            <Label fx:id="statusLabel" text="En attente de joueurs..." style="-fx-text-fill: #FF9800; -fx-font-weight: bold;" />
+        </VBox>
+    </top>
+    <center>
+        <VBox spacing="10" style="-fx-padding: 30;">
+            <Label text="Joueurs Connectés" styleClass="card-title"/>
+            <ListView fx:id="playerListView" VBox.vgrow="ALWAYS" style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #ddd;" />
+        </VBox>
+    </center>
+    <bottom>
+        <HBox alignment="CENTER" spacing="20" style="-fx-padding: 30;">
+            <Button text="Quitter" onAction="#leaveRoom" styleClass="secondary-button" />
+            <Button text="Actualiser" onAction="#refreshRoomData" styleClass="secondary-button" />
+            <Button fx:id="startButton" text="Lancer la Partie" onAction="#startGame" styleClass="modern-button" />
+        </HBox>
+    </bottom>
+</BorderPane>

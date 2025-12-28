@@ -33,7 +33,7 @@ public class LanguageSelectionController {
     private Button startButton;
 
     private ProgrammingLanguage selectedLanguage;
-    private String selectedDifficulty = "BEGINNER"; // Default value
+    private String selectedDifficulty = "DÉBUTANT"; // Default value
     private Stage stage;
     private Runnable onLanguageSelected;
     private StackPane contentArea;
@@ -64,7 +64,7 @@ public class LanguageSelectionController {
         languageList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 selectedLanguage = newVal;
-                selectedLabel.setText("Selected: " + newVal.toString());
+                selectedLabel.setText("Sélectionné : " + newVal.toString());
                 startButton.setDisable(false);
             }
         });
@@ -74,9 +74,9 @@ public class LanguageSelectionController {
 
         // Setup difficulty combo
         if (difficultyCombo != null) {
-            difficultyCombo.setItems(FXCollections.observableArrayList("BEGINNER", "INTERMEDIATE", "ADVANCED"));
-            difficultyCombo.setValue("BEGINNER");
-            selectedDifficulty = "BEGINNER";
+            difficultyCombo.setItems(FXCollections.observableArrayList("DÉBUTANT", "INTERMÉDIAIRE", "AVANCÉ"));
+            difficultyCombo.setValue("DÉBUTANT");
+            selectedDifficulty = "DÉBUTANT";
             difficultyCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
                 selectedDifficulty = newVal;
             });
@@ -98,7 +98,7 @@ public class LanguageSelectionController {
                 }
 
                 if (selectedCourse == null) {
-                    showError("No course found for language: " + selectedLanguage.getDisplayName());
+                    showError("Aucun cours trouvé pour : " + selectedLanguage.getDisplayName());
                     return;
                 }
 
@@ -106,14 +106,17 @@ public class LanguageSelectionController {
                 List<Quiz> quizzes = quizService.getQuizzesForCourse(selectedCourse.getId());
 
                 if (quizzes.isEmpty()) {
-                    showError("No quizzes available for " + selectedLanguage.getDisplayName());
+                    showError("Aucun quiz disponible pour " + selectedLanguage.getDisplayName());
                     return;
                 }
 
                 // Select quiz based on difficulty
                 Quiz selectedQuiz = null;
+                // We search for the French keyword in the Title (e.g. " - Débutant")
+                String searchKeyword = selectedDifficulty.toLowerCase();
+
                 for (Quiz quiz : quizzes) {
-                    if (quiz.getTitle().toLowerCase().contains(selectedDifficulty.toLowerCase())) {
+                    if (quiz.getTitle().toLowerCase().contains(searchKeyword)) {
                         selectedQuiz = quiz;
                         break;
                     }
@@ -131,7 +134,12 @@ public class LanguageSelectionController {
                 BorderPane quizView = loader.load();
 
                 com.app.controller.QuizController controller = loader.getController();
+                controller.setContentArea(contentArea);
                 controller.loadQuiz(selectedQuiz.getId());
+
+                // Set the selected difficulty for Question filtering (needs English Enum)
+                String englishDifficulty = getDifficultyKeyword(selectedDifficulty);
+                controller.setInitialDifficulty(englishDifficulty);
 
                 if (contentArea != null) {
                     contentArea.getChildren().clear();
@@ -140,7 +148,7 @@ public class LanguageSelectionController {
 
             } catch (IOException e) {
                 e.printStackTrace();
-                showError("Failed to load quiz: " + e.getMessage());
+                showError("Erreur de chargement du quiz : " + e.getMessage());
             }
 
             if (onLanguageSelected != null) {
@@ -149,6 +157,21 @@ public class LanguageSelectionController {
             if (stage != null) {
                 stage.close();
             }
+        }
+    }
+
+    private String getDifficultyKeyword(String frenchDiff) {
+        if (frenchDiff == null)
+            return "";
+        switch (frenchDiff) {
+            case "DÉBUTANT":
+                return "Beginner";
+            case "INTERMÉDIAIRE":
+                return "Intermediate";
+            case "AVANCÉ":
+                return "Advanced";
+            default:
+                return frenchDiff;
         }
     }
 
@@ -177,7 +200,7 @@ public class LanguageSelectionController {
 
     private void showError(String message) {
         javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
-        alert.setTitle("Error");
+        alert.setTitle("Erreur");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();

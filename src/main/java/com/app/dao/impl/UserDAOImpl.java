@@ -13,7 +13,7 @@ public class UserDAOImpl implements UserDAO {
     public Optional<User> findByUsername(String username) {
         String sql = "SELECT * FROM users WHERE username = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -24,12 +24,12 @@ public class UserDAOImpl implements UserDAO {
         }
         return Optional.empty();
     }
-    
+
     @Override
     public Optional<User> findByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -44,24 +44,29 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public boolean create(User user) {
         String sql = "INSERT INTO users (username, email, password_hash, role, is_active) VALUES (?, ?, ?, ?, ?)";
+        System.out.println("UserDAO: Attempting to create user: " + user.getUsername());
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, user.getEmail());
             stmt.setString(3, user.getPasswordHash());
             stmt.setString(4, user.getRole().name());
             stmt.setBoolean(5, user.isActive());
-            
+
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
                 try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         user.setId(generatedKeys.getInt(1));
+                        System.out.println("UserDAO: User created with ID: " + user.getId());
                     }
                 }
                 return true;
+            } else {
+                System.out.println("UserDAO: No rows affected during user creation.");
             }
         } catch (SQLException e) {
+            System.err.println("UserDAO: Error creating user: " + e.getMessage());
             e.printStackTrace();
         }
         return false;

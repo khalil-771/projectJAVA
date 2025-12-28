@@ -11,8 +11,8 @@
    <top>
       <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
         <items>
-          <Button mnemonicParsing="false" onAction="#runCode" text="Run &gt;" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold;"/>
-          <Button mnemonicParsing="false" onAction="#saveSnippet" text="Save" />
+          <Button mnemonicParsing="false" onAction="#runCode" text="Exécuter &gt;" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold;"/>
+          <Button mnemonicParsing="false" onAction="#saveSnippet" text="Sauvegarder" />
         </items>
       </ToolBar>
    </top>

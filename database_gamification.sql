@@ -1,7 +1,7 @@
 -- Gamification Database Extensions
 -- Run this after database_setup.sql
 
-USE elearning_db;
+USE quiztests;
 
 -- ============================================
 -- USER STATISTICS & PROGRESSION
