@@ -135,11 +135,9 @@ public class LanguageSelectionController {
 
                 com.app.controller.QuizController controller = loader.getController();
                 controller.setContentArea(contentArea);
-                controller.loadQuiz(selectedQuiz.getId());
-
                 // Set the selected difficulty for Question filtering (needs English Enum)
                 String englishDifficulty = getDifficultyKeyword(selectedDifficulty);
-                controller.setInitialDifficulty(englishDifficulty);
+                controller.loadQuiz(selectedQuiz.getId(), englishDifficulty);
 
                 if (contentArea != null) {
                     contentArea.getChildren().clear();

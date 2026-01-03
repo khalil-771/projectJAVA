@@ -34,7 +34,6 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
@@ -100,7 +99,7 @@ public class QuizController {
     private String currentLanguage;
     private String currentDifficulty;
 
-    public void loadQuiz(int quizId) {
+    public void loadQuiz(int quizId, String difficulty) {
         currentQuiz = quizService.getQuiz(quizId);
         if (currentQuiz == null)
             return;
@@ -113,40 +112,26 @@ public class QuizController {
             this.currentLanguage = course.getLanguageTag();
         }
 
+        // Apply difficulty filter
+        if (difficulty != null) {
+            if (difficulty.equalsIgnoreCase("Débutant"))
+                difficulty = "BEGINNER";
+            else if (difficulty.equalsIgnoreCase("Intermédiaire"))
+                difficulty = "INTERMEDIATE";
+            else if (difficulty.equalsIgnoreCase("Avancé"))
+                difficulty = "ADVANCED";
+
+            this.currentDifficulty = difficulty.equalsIgnoreCase("All") ? null : difficulty.toUpperCase();
+        }
+
         // Initial setup - load random questions from database
         filterQuestions();
         startQuiz();
     }
 
-    public void setInitialDifficulty(String difficulty) {
-        // Map French UI terms to DB Enum consistency
-        if (difficulty.equalsIgnoreCase("Débutant"))
-            difficulty = "BEGINNER";
-        else if (difficulty.equalsIgnoreCase("Intermédiaire"))
-            difficulty = "INTERMEDIATE";
-        else if (difficulty.equalsIgnoreCase("Avancé"))
-            difficulty = "ADVANCED";
-
-        this.currentDifficulty = difficulty.equals("All") ? null : difficulty.toUpperCase();
-        reloadQuizByDifficulty(difficulty);
-    }
-
-    private void reloadQuizByDifficulty(String difficulty) {
-        if (difficulty.equals("All")) {
-            this.currentDifficulty = null;
-        } else {
-            this.currentDifficulty = difficulty.toUpperCase();
-            List<Quiz> quizzes = quizService.getQuizzesForCourse(this.courseId);
-            for (Quiz q : quizzes) {
-                if (q.getTitle().toLowerCase().contains(difficulty.toLowerCase())) {
-                    this.currentQuiz = quizService.getQuiz(q.getId());
-                    break;
-                }
-            }
-        }
-        filterQuestions();
-        startQuiz();
-    }
+    // Deprecated/Removed setInitialDifficulty and reloadQuizByDifficulty to avoid
+    // confusion
+    // as the specific Quiz ID should be authoritative in multiplayer.
 
     private void filterQuestions() {
         filteredQuestions = new ArrayList<>();
@@ -211,10 +196,22 @@ public class QuizController {
         nextButton.setDisable(false);
         nextButton.setText("Question Suivante");
 
-        // Hide multiplayer results if visible
         if (multiplayerResultsBox != null) {
             multiplayerResultsBox.setVisible(false);
             multiplayerResultsBox.setManaged(false);
+        }
+
+        // AGGRESSIVE UNLOCK: Traverse up and enable EVERYTHING
+        javafx.scene.Node node = questionView;
+        while (node != null) {
+            node.setDisable(false);
+            node.setMouseTransparent(false);
+            System.out.println("🔓 Unlocking node: " + node.getClass().getSimpleName());
+            node = node.getParent();
+        }
+
+        if (currentRoom != null) {
+            setupMultiplayerScoreListener();
         }
 
         showQuestion();
@@ -235,13 +232,21 @@ public class QuizController {
 
         answersContainer.getChildren().clear();
 
+        // Remove resultsView from hierarchy to prevent ANY overlay
+        if (contentArea.getChildren().contains(resultsView)) {
+            contentArea.getChildren().remove(resultsView);
+            System.out.println("🗑 Removed resultsView from scene graph to prevent blocking");
+        }
+
         // Logic to choose between RadioButton (Single) and CheckBox (Multi)
         if (q.getType() == com.app.model.Question.QuestionType.MULTIPLE_CHOICE) {
             // Multiple Choice: Use CheckBox
             for (Answer a : q.getAnswers()) {
                 CheckBox cb = new CheckBox(a.getAnswerText());
                 cb.setUserData(a.getId());
-                cb.setStyle("-fx-font-size: 14px;");
+                cb.setStyle("-fx-font-size: 14px; -fx-opacity: 1.0; -fx-text-fill: black;");
+                cb.setDisable(false);
+                cb.setOnMouseClicked(e -> System.out.println("🖱 CheckBox CLICKED: " + a.getAnswerText()));
                 answersContainer.getChildren().add(cb);
             }
         } else {
@@ -251,7 +256,9 @@ public class QuizController {
                 javafx.scene.control.RadioButton rb = new javafx.scene.control.RadioButton(a.getAnswerText());
                 rb.setUserData(a.getId());
                 rb.setToggleGroup(group);
-                rb.setStyle("-fx-font-size: 14px;");
+                rb.setStyle("-fx-font-size: 14px; -fx-opacity: 1.0; -fx-text-fill: black;");
+                rb.setDisable(false);
+                rb.setOnMouseClicked(e -> System.out.println("🖱 RadioButton CLICKED: " + a.getAnswerText()));
                 answersContainer.getChildren().add(rb);
             }
         }
@@ -262,6 +269,7 @@ public class QuizController {
         } else {
             nextButton.setText("Question Suivante");
         }
+        nextButton.setDisable(false); // Force enable
 
         startTimer();
     }
@@ -273,20 +281,26 @@ public class QuizController {
         timerLabel.setTextFill(Color.web("#e91e63"));
 
         timer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-            timeSeconds--;
-            timerLabel.setText(String.format("Temps : 00:%02d", timeSeconds));
+            try {
+                timeSeconds--;
+                timerLabel.setText(String.format("Temps : 00:%02d", timeSeconds));
 
-            if (timeSeconds <= 10) {
-                timerLabel.setTextFill(Color.RED);
-            }
+                if (timeSeconds <= 10) {
+                    timerLabel.setTextFill(Color.RED);
+                }
 
-            if (timeSeconds <= 0) {
-                stopTimer();
-                handleTimeout();
+                if (timeSeconds <= 0) {
+                    stopTimer();
+                    handleTimeout();
+                }
+            } catch (Exception ex) {
+                System.err.println("❌ Error in Timer Tick: " + ex.getMessage());
+                ex.printStackTrace();
             }
         }));
         timer.setCycleCount(Timeline.INDEFINITE);
         timer.play();
+        System.out.println("⏰ Timer started for Question " + (currentQuestionIndex + 1));
     }
 
     private void stopTimer() {
@@ -309,36 +323,62 @@ public class QuizController {
 
     @FXML
     public void handleNext() {
-        if (!isReviewMode && filteredQuestions != null && currentQuestionIndex < filteredQuestions.size()) {
-            totalTimeTaken += (30 - timeSeconds);
-        }
-        stopTimer();
-
-        // Save answer
-        Question currentQ = filteredQuestions.get(currentQuestionIndex);
-        List<Integer> selectedIds = new ArrayList<>();
-
-        // Collect selected answers (works for both CheckBox and RadioButton)
-        for (javafx.scene.Node node : answersContainer.getChildren()) {
-            if (node instanceof CheckBox) {
-                if (((CheckBox) node).isSelected())
-                    selectedIds.add((Integer) node.getUserData());
-            } else if (node instanceof javafx.scene.control.RadioButton) {
-                if (((javafx.scene.control.RadioButton) node).isSelected())
-                    selectedIds.add((Integer) node.getUserData());
+        System.out.println("👉 handleNext() called. Index: " + currentQuestionIndex);
+        try {
+            if (!isReviewMode && filteredQuestions != null && currentQuestionIndex < filteredQuestions.size()) {
+                totalTimeTaken += (30 - timeSeconds);
             }
+            stopTimer();
+
+            if (filteredQuestions == null || filteredQuestions.isEmpty()) {
+                System.err.println("❌ No questions loaded!");
+                return;
+            }
+
+            // Save answer
+            if (currentQuestionIndex < filteredQuestions.size()) {
+                Question currentQ = filteredQuestions.get(currentQuestionIndex);
+                List<Integer> selectedIds = new ArrayList<>();
+
+                // Collect selected answers (works for both CheckBox and RadioButton)
+                for (javafx.scene.Node node : answersContainer.getChildren()) {
+                    if (node instanceof CheckBox) {
+                        if (((CheckBox) node).isSelected())
+                            selectedIds.add((Integer) node.getUserData());
+                    } else if (node instanceof javafx.scene.control.RadioButton) {
+                        if (((javafx.scene.control.RadioButton) node).isSelected())
+                            selectedIds.add((Integer) node.getUserData());
+                    }
+                }
+                userAnswers.put(currentQ.getId(), selectedIds);
+            }
+
+            currentQuestionIndex++;
+            showQuestion();
+        } catch (Exception e) {
+            System.err.println("❌ CRITICAL ERROR in handleNext:");
+            e.printStackTrace();
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                    javafx.scene.control.Alert.AlertType.ERROR);
+            alert.setTitle("Erreur Interne");
+            alert.setHeaderText("Une erreur est survenue");
+            alert.setContentText(e.getMessage());
+            alert.show();
         }
-
-        userAnswers.put(currentQ.getId(), selectedIds);
-
-        currentQuestionIndex++;
-        showQuestion();
     }
 
     private void finishQuiz() {
         stopTimer();
         questionView.setVisible(false);
+
+        // Re-add resultsView if missing
+        if (!contentArea.getChildren().contains(resultsView)) {
+            contentArea.getChildren().add(resultsView);
+            System.out.println("♻ Re-added resultsView to scene graph");
+        }
+
         resultsView.setVisible(true);
+        resultsView.setMouseTransparent(false); // Re-enable clicks for results
         nextButton.setVisible(false);
 
         // Calculate
@@ -390,13 +430,23 @@ public class QuizController {
     private void handleMultiplayerResults(int score) {
         String myId = String.valueOf(AuthenticationService.getCurrentUser().getId());
 
-        // 1. Submit score and time to DB
+        // 1. Submit score locally (DB)
         RoomManager.getInstance().submitFinalScore(currentRoom.getRoomId(), myId, score, totalTimeTaken);
 
-        // 2. Refresh Room data to see others
-        Room updatedRoom = RoomManager.getInstance().getRoom(currentRoom.getRoomId());
-        if (updatedRoom == null)
-            return;
+        // 1b. Update local instance immediately for instant UI response
+        currentRoom.getScores().put(myId, score);
+        currentRoom.getTimes().put(myId, totalTimeTaken);
+
+        // 2. BROADCAST Score to others
+        // Create a simple payload or just send raw string "userId:score:time"
+        String payload = myId + ":" + score + ":" + totalTimeTaken;
+        com.app.network.NetworkManager.getInstance().sendMessage("SCORE_UPDATE", currentRoom.getRoomName(), payload);
+
+        // 3. LISTEN for others' scores
+        setupMultiplayerScoreListener();
+
+        // 4. Show initial state (me)
+        refreshMultiplayerLeaderboard();
 
         multiplayerResultsBox.setVisible(true);
         multiplayerResultsBox.setManaged(true);
@@ -405,8 +455,71 @@ public class QuizController {
         FadeTransition ft = new FadeTransition(Duration.millis(800), multiplayerResultsBox);
         ft.setToValue(1.0);
         ft.play();
+    }
 
-        updateLeaderboardUI(updatedRoom, myId, score);
+    private void setupMultiplayerScoreListener() {
+        com.app.network.NetworkManager.getInstance().getClient().setMessageHandler(msg -> {
+            javafx.application.Platform.runLater(() -> {
+                if ("SCORE_UPDATE".equals(msg.getType())) {
+                    try {
+                        // Parse "userId:score:time"
+                        String[] parts = msg.getContent().replace("\"", "").split(":");
+                        if (parts.length >= 3) {
+                            String uid = parts[0];
+                            int s = Integer.parseInt(parts[1]);
+                            int t = Integer.parseInt(parts[2]);
+
+                            // Update local room copy manually to insure speed
+                            currentRoom.getScores().put(uid, s);
+                            currentRoom.getTimes().put(uid, t);
+
+                            // CRITICAL: Ensure player exists in our list so they show on leaderboard
+                            if (!currentRoom.getPlayers().containsKey(uid)) {
+                                System.out.println("⚠ Received score from unknown player " + uid + ". Creating entry.");
+                                com.app.roomquiz.Player dummy = new com.app.roomquiz.Player(uid, "Joueur " + uid);
+                                currentRoom.getPlayers().put(uid, dummy);
+                            }
+
+                            refreshMultiplayerLeaderboard();
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Failed to parse score update: " + e.getMessage());
+                    }
+                }
+            });
+        });
+    }
+
+    private void refreshMultiplayerLeaderboard() {
+        System.out.println("🔄 Refreshing leaderboard for room: " + currentRoom.getRoomId());
+
+        // Also fetch latest from DB to be safe (syncs any missed network msgs)
+        Room updated = RoomManager.getInstance().getRoom(currentRoom.getRoomId());
+        if (updated != null) {
+            // Aggressively merge players from DB to ensure names are up to date
+            updated.getPlayers().forEach((k, v) -> {
+                currentRoom.getPlayers().put(k, v); // Force update to get latest username
+            });
+
+            // Overwrite local data ONLY if DB has actual results (> 0)
+            // This prevents the DB's initial 0s from overwriting a real score we just got
+            // via network
+            updated.getScores().forEach((uid, dbScore) -> {
+                int localScore = currentRoom.getScores().getOrDefault(uid, 0);
+                if (dbScore > localScore
+                        || (dbScore == localScore && localScore == 0 && updated.getTimes().getOrDefault(uid, 0) > 0)) {
+                    currentRoom.getScores().put(uid, dbScore);
+                    currentRoom.getTimes().put(uid, updated.getTimes().getOrDefault(uid, 0));
+                }
+            });
+        }
+
+        String myId = String.valueOf(AuthenticationService.getCurrentUser().getId());
+        int myStoredScore = currentRoom.getScores().getOrDefault(myId, 0);
+
+        System.out.println("📊 Leaderboard Update. Players: " + currentRoom.getPlayers().size() + ", Scores: "
+                + currentRoom.getScores());
+        updateLeaderboardUI(currentRoom, myId, myStoredScore);
     }
 
     private void updateLeaderboardUI(Room room, String myId, int myScore) {

@@ -3,18 +3,14 @@ package com.app.model;
 public enum ProgrammingLanguage {
     JAVA("Java", "java", "☕"),
     PYTHON("Python", "python", "🐍"),
-    CPP("C++", "cpp", "⚙️"),
-    C("C", "c", "🔧"),
-    HTML("HTML", "html", "🌐"),
-    CSS("CSS", "css", "🎨"),
     JAVASCRIPT("JavaScript", "js", "⚡"),
     SQL("SQL", "sql", "🗄️"),
     KOTLIN("Kotlin", "kotlin", "🅺"),
     PHP("PHP", "php", "🐘"),
-    CSHARP("C#", "csharp", "#️⃣"),
-    RUBY("Ruby", "ruby", "💎"),
-    SWIFT("Swift", "swift", "🦅"),
-    GO("Go", "go", "🐹");
+    CPP("C++", "cpp", "⚙️"),
+    C("C", "c", "🇨"),
+    HTML("HTML", "html", "🌐"),
+    CSS("CSS", "css", "🎨");
 
     private final String displayName;
     private final String tag;

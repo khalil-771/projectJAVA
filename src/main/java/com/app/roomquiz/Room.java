@@ -5,9 +5,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.app.model.Quiz;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Room for multiplayer quiz battles
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Room {
     private String roomId;
     private String roomName;
@@ -31,7 +34,16 @@ public class Room {
         FINISHED // Quiz completed
     }
 
+    public Room() {
+        this.players = new ConcurrentHashMap<>();
+        this.scores = new ConcurrentHashMap<>();
+        this.times = new ConcurrentHashMap<>();
+        this.status = RoomStatus.WAITING;
+        this.currentQuestionIndex = 0;
+    }
+
     public Room(String roomId, String roomName, String hostUserId, String hostIp, String language, String difficulty,
+
             int maxPlayers) {
         this.roomId = roomId;
         this.roomName = roomName;
@@ -174,8 +186,28 @@ public class Room {
         return hostIp;
     }
 
-    public void setHostIp(String hostIp) {
-        this.hostIp = hostIp;
+    public void setRoomId(String roomId) {
+        this.roomId = roomId;
+    }
+
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
+    }
+
+    public void setHostUserId(String hostUserId) {
+        this.hostUserId = hostUserId;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public void setDifficulty(String difficulty) {
+        this.difficulty = difficulty;
+    }
+
+    public void setMaxPlayers(int maxPlayers) {
+        this.maxPlayers = maxPlayers;
     }
 
     public RoomStatus getStatus() {

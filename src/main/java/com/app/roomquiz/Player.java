@@ -8,10 +8,21 @@ public class Player {
     private String username;
     private boolean isReady;
 
+    public Player() {
+    }
+
     public Player(String userId, String username) {
         this.userId = userId;
         this.username = username;
         this.isReady = false;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getUserId() {

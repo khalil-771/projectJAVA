@@ -53,6 +53,26 @@ public class RoomManager {
     }
 
     /**
+     * Sync room data locally (for guests joining from IP)
+     */
+    public boolean syncRoomLocally(Room room) {
+        if (room == null)
+            return false;
+        Room existing = getRoom(room.getRoomId());
+        if (existing == null) {
+            roomDAO.createRoom(room);
+        }
+
+        // Sync players too
+        if (room.getPlayers() != null) {
+            for (Player p : room.getPlayers().values()) {
+                roomDAO.addPlayer(room.getRoomId(), p);
+            }
+        }
+        return true;
+    }
+
+    /**
      * Get all available rooms
      */
     public List<Room> getAvailableRooms() {
@@ -98,7 +118,7 @@ public class RoomManager {
             Room freshRoom = getRoom(roomId);
             if (isHost || freshRoom == null || freshRoom.getPlayerCount() == 0) {
                 roomDAO.deleteRoom(roomId);
-                System.out.println("🗑️ Room deleted: " + roomId);
+                System.out.println("🗑 Room deleted: " + roomId);
             }
         }
     }

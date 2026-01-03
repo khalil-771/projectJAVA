@@ -5,10 +5,14 @@ import java.sql.Timestamp;
 public class Badge {
 
     public enum BadgeType {
-        ACHIEVEMENT, // One-time achievements
-        MILESTONE, // Progress milestones
-        MASTERY, // Language/skill mastery
-        SPECIAL // Rare/special badges
+        ACHIEVEMENT,
+        MILESTONE,
+        MASTERY,
+        STREAK,
+        SCORE,
+        LEVEL,
+        COURSE_COMPLETION,
+        SPECIAL
     }
 
     private int id;

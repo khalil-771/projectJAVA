@@ -40,6 +40,7 @@ public class RoomController {
     private final QuizService quizService = new QuizService();
     private final CourseService courseService = new CourseService(); // Add missing import if needed or use simple logic
     private StackPane contentArea;
+    private boolean isGameStarted = false; // Prevent double-navigation
 
     public void setContentArea(StackPane contentArea) {
         this.contentArea = contentArea;
@@ -47,6 +48,7 @@ public class RoomController {
 
     public void setRoom(Room room) {
         this.room = room;
+        this.isGameStarted = false; // Reset state
         updateUI();
         setupNetworkListener();
         // Poller is no longer needed with Sockets!
@@ -57,10 +59,22 @@ public class RoomController {
             Platform.runLater(() -> {
                 System.out.println("📺 Room received msg: " + msg.getType());
                 if ("JOIN".equals(msg.getType())) {
+                    // Sync the joining user into our local database
+                    try {
+                        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                        com.app.model.User joiningUser = mapper.readValue(msg.getContent(), com.app.model.User.class);
+                        roomManager.joinRoom(room.getRoomId(), String.valueOf(joiningUser.getId()),
+                                joiningUser.getUsername());
+                    } catch (Exception e) {
+                        System.err.println("DEBUG: Failed to sync joining user: " + e.getMessage());
+                    }
                     // Refresh room data from DB (simplest way to sync state)
                     refreshRoomData();
                 } else if ("START".equals(msg.getType())) {
                     // Remote start triggered!
+                    if (isGameStarted)
+                        return;
+
                     // Content is quiz ID
                     try {
                         int quizId = Integer.parseInt(msg.getContent().replace("\"", ""));
@@ -119,6 +133,7 @@ public class RoomController {
         if (myId.equals(room.getHostUserId())) {
             com.app.network.NetworkManager.getInstance().sendMessage("CLOSE_ROOM", room.getRoomName(),
                     room.getRoomId());
+            com.app.network.NetworkManager.getInstance().stopAll(); // Cleanup server
         }
 
         roomManager.leaveRoom(room.getRoomId(), myId);
@@ -141,6 +156,7 @@ public class RoomController {
 
     @FXML
     private void startGame() {
+        startButton.setDisable(true); // Prevent double-clicks
         try {
             // Find course matching room language (using tag or partial title)
             List<Course> courses = new CourseService().getAllCourses();
@@ -167,7 +183,7 @@ public class RoomController {
                 }
                 targetCourse = courses.get(0);
                 System.out
-                        .println("⚠️ No exact match for " + roomLang + ", using fallback: " + targetCourse.getTitle());
+                        .println("⚠ No exact match for " + roomLang + ", using fallback: " + targetCourse.getTitle());
             }
 
             List<Quiz> quizzes = quizService.getQuizzesForCourse(targetCourse.getId());
@@ -219,8 +235,12 @@ public class RoomController {
             // Set difficulty from room state
             controller.setContentArea(contentArea);
             controller.setRoom(this.room);
-            controller.loadQuiz(quizId);
-            controller.setInitialDifficulty(room.getDifficulty());
+            controller.loadQuiz(quizId, room.getDifficulty());
+
+            isGameStarted = true; // Mark game as started to ignore subsequent START messages
+
+            // Stop listening to Room events to prevent interference during Quiz
+            com.app.network.NetworkManager.getInstance().getClient().setMessageHandler(null);
 
             contentArea.getChildren().clear();
             contentArea.getChildren().add(quizView);

@@ -30,7 +30,11 @@ public class QuestionDAOImpl implements QuestionDAO {
     @Override
     public List<Question> findByLanguage(String language) {
         List<Question> questions = new ArrayList<>();
-        String sql = "SELECT * FROM questions WHERE language_tag = ? ORDER BY id DESC";
+        // Join with quizzes and courses to filter by language_tag
+        String sql = "SELECT q.* FROM questions q " +
+                "JOIN quizzes quiz ON q.quiz_id = quiz.id " +
+                "JOIN courses c ON quiz.course_id = c.id " +
+                "WHERE c.language_tag = ? ORDER BY q.id DESC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, language);

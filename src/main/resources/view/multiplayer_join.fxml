@@ -21,9 +21,11 @@
                   <ColumnConstraints hgrow="ALWAYS" />
                </columnConstraints>
                <children>
-                  <Label styleClass="label-white" text="Code de la Salle:" GridPane.rowIndex="0" />
+                  <Label styleClass="label-white" text="Code de la Salle (6 chiffres):" GridPane.rowIndex="0" />
                   <TextField fx:id="roomCodeField" promptText="Ex: 123456" styleClass="modern-field" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                  <TextField fx:id="hostIpField" managed="false" visible="false" />
+                  
+                  <Label styleClass="label-white" text="Adresse IP de l'Hôte:" GridPane.rowIndex="1" />
+                  <TextField fx:id="hostIpField" promptText="Ex: 192.168.1.15 ou localhost" styleClass="modern-field" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                </children>
             </GridPane>
             
@@ -36,6 +38,7 @@
          </children>
       </VBox>
       
-      <Label text="Note: Seul le code est nécessaire. L'IP sera détectée automatiquement." textFill="#666" />
+      <Label text="Note: L'IP est nécessaire si votre ami n'est pas sur le même ordinateur (localhost sinon)." textFill="#666" />
+
    </children>
 </VBox>

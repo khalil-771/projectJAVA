@@ -12,7 +12,7 @@ module com.app {
 
     opens com.app to javafx.fxml;
     opens com.app.controller to javafx.fxml;
-    opens com.app.model to javafx.base;
+    opens com.app.model to javafx.base, com.fasterxml.jackson.databind;
     opens com.app.roomquiz to com.fasterxml.jackson.databind;
 
     exports com.app;

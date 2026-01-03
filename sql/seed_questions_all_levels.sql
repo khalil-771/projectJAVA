@@ -1,6 +1,6 @@
 -- Seed file: 20+ questions per level (BEGINNER / INTERMEDIATE / ADVANCED) for Java, Python, JavaScript, SQL
 -- Assumes database `elearning_db` exists and tables from database_setup.sql are present.
-USE elearning_db;
+USE quiztests;
 
 -- Ensure difficulty column exists
 SET @sql = (SELECT IF(

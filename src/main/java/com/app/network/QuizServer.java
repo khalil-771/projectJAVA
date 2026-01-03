@@ -54,7 +54,9 @@ public class QuizServer {
 
     public void broadcast(NetworkMessage message) {
         for (ClientHandler client : clients) {
-            client.sendMessage(message);
+            if (client != null) {
+                client.sendMessage(message);
+            }
         }
     }
 
@@ -65,39 +67,60 @@ public class QuizServer {
 
         public ClientHandler(Socket socket) {
             this.socket = socket;
-            try {
-                out = new ObjectOutputStream(socket.getOutputStream());
-                in = new ObjectInputStream(socket.getInputStream());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
 
         @Override
         public void run() {
             try {
+                out = new ObjectOutputStream(socket.getOutputStream());
+                out.flush();
+                in = new ObjectInputStream(socket.getInputStream());
+
                 while (running) {
+
                     NetworkMessage msg = (NetworkMessage) in.readObject();
-                    // Relay message or process it
+                    if (msg == null)
+                        break;
+
                     System.out.println("📩 Received: " + msg.getType() + " from " + msg.getSender());
 
-                    // Most messages in this architecture are relayed to everyone
+                    // Relay message or process it
                     broadcast(msg);
+
+                    // If it's a JOIN, also send current Room data back to the new player
+                    if ("JOIN".equals(msg.getType())) {
+                        com.app.roomquiz.Room activeRoom = NetworkManager.getInstance().getActiveRoom();
+                        if (activeRoom != null) {
+                            try {
+                                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                                String roomJson = mapper.writeValueAsString(activeRoom);
+                                sendMessage(new NetworkMessage("ROOM_INFO", "SERVER", roomJson));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
                 }
+            } catch (java.io.EOFException | java.net.SocketException e) {
+                System.out.println("👤 Client disconnected: " + socket.getInetAddress());
             } catch (Exception e) {
-                System.out.println("❌ Client disconnected: " + socket.getInetAddress());
+                System.out.println("❌ Error in ClientHandler for " + socket.getInetAddress() + ": " + e.getMessage());
+                e.printStackTrace();
             } finally {
                 clients.remove(this);
                 close();
             }
         }
 
-        public void sendMessage(NetworkMessage msg) {
+        public synchronized void sendMessage(NetworkMessage msg) {
             try {
-                out.writeObject(msg);
-                out.flush();
+                if (out != null) {
+                    out.writeObject(msg);
+                    out.flush();
+                }
             } catch (IOException e) {
-                e.printStackTrace();
+                System.err.println("Failed to send message to " + socket.getInetAddress() + ": " + e.getMessage());
             }
         }
 

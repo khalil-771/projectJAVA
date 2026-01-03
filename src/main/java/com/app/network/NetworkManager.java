@@ -12,6 +12,7 @@ public class NetworkManager {
     private static NetworkManager instance;
     private QuizServer server;
     private QuizClient client;
+    private Room activeRoom;
     private final ObjectMapper mapper = new ObjectMapper();
 
     private NetworkManager() {
@@ -23,6 +24,14 @@ public class NetworkManager {
             instance = new NetworkManager();
         }
         return instance;
+    }
+
+    public void setActiveRoom(Room room) {
+        this.activeRoom = room;
+    }
+
+    public Room getActiveRoom() {
+        return activeRoom;
     }
 
     public void startHosting(int port) {
@@ -51,7 +60,11 @@ public class NetworkManager {
     }
 
     public boolean joinHost(String ip, int port) {
-        return client.connect(ip, port);
+        return joinHost(ip, port, 0);
+    }
+
+    public boolean joinHost(String ip, int port, int timeout) {
+        return client.connect(ip, port, timeout);
     }
 
     public QuizClient getClient() {

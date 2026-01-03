@@ -15,9 +15,19 @@ public class QuizClient {
     private Consumer<NetworkMessage> messageHandler;
 
     public boolean connect(String host, int port) {
+        return connect(host, port, 0); // Default no timeout
+    }
+
+    public boolean connect(String host, int port, int timeout) {
         try {
-            socket = new Socket(host, port);
+            // Ensure any previous connection is closed
+            disconnect();
+
+            socket = new Socket();
+            socket.connect(new InetSocketAddress(host, port), timeout);
+
             out = new ObjectOutputStream(socket.getOutputStream());
+            out.flush(); // Send header immediately
             in = new ObjectInputStream(socket.getInputStream());
             connected = true;
 
@@ -34,24 +44,28 @@ public class QuizClient {
         try {
             while (connected) {
                 NetworkMessage msg = (NetworkMessage) in.readObject();
-                if (messageHandler != null) {
+                if (msg != null && messageHandler != null) {
                     messageHandler.accept(msg);
                 }
             }
+        } catch (java.io.EOFException | java.net.SocketException e) {
+            System.out.println("🔌 Connection closed by server.");
+            connected = false;
         } catch (Exception e) {
-            System.out.println("🔌 Connection lost");
+            System.out.println("🔌 Connection lost: " + e.getMessage());
+            e.printStackTrace();
             connected = false;
         }
     }
 
-    public void sendMessage(NetworkMessage msg) {
-        if (!connected)
+    public synchronized void sendMessage(NetworkMessage msg) {
+        if (!connected || out == null)
             return;
         try {
             out.writeObject(msg);
             out.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Client failed to send message: " + e.getMessage());
         }
     }
 

@@ -43,7 +43,7 @@ public class MultiplayerCreateController {
     public void initialize() {
         // Detect local IP automatically
         hostIpField.setText(getLocalIpAddress());
-        hostIpField.setEditable(false); // Make it read-only as requested for automation
+        hostIpField.setEditable(true); // Allow user to correct it if wrong
 
         // Set default values immediately for instant page display
         // Set default values immediately for instant page display
@@ -100,6 +100,9 @@ public class MultiplayerCreateController {
         Room room = roomManager.createRoom(name, String.valueOf(currentUser.getId()), ip, language, difficulty, 4);
 
         if (room != null) {
+            // Store room info for direct connect guests
+            NetworkManager.getInstance().setActiveRoom(room);
+
             // Join our own room
             boolean joined = roomManager.joinRoom(room.getRoomId(), String.valueOf(currentUser.getId()),
                     currentUser.getUsername());

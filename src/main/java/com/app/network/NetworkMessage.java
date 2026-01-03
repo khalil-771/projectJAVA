@@ -6,7 +6,9 @@ import java.io.Serializable;
  * Basic message structure for socket communication
  */
 public class NetworkMessage implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String type; // e.g., JOIN, START, UPDATE, CHAT
+
     private String sender;
     private String content; // JSON payload
 
